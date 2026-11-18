@@ -1,11 +1,11 @@
 # Roadmap
 
-Статус этапов — плановый. Этап 0 завершён и спецификация утверждена.
+Статус этапов — плановый. Этапы 0 и 1 завершены, спецификация утверждена.
 
 | Этап | Название | Статус |
 |---|---|---|
 | 0 | Интервью, аудит, спецификация | Completed |
-| 1 | Foundation | In progress |
+| 1 | Foundation | Completed |
 | 2 | Core Infrastructure | Not started |
 | 3 | Model Runtime | Not started |
 | 4 | Agent Core | Not started |
@@ -26,16 +26,16 @@
 Подготовить воспроизводимую инженерную основу без преждевременной реализации продуктовых подсистем.
 
 ### Задачи
-1. Проверить SDK, IDE/toolchain и целевые платформы. — выполнено локально (Linux)
+1. Проверить SDK, IDE/toolchain и целевые платформы. — выполнено (Linux локально, Windows в CI)
 2. Зафиксировать ADR: solution layout, dependency direction, configuration, logging, testing, IPC strategy. — ADR 0001–0005 accepted 2026-11-18
 3. Создать минимальный `.slnx`. — выполнено
 4. Создать только реально необходимые проекты. — выполнено (`Astra.Host` + тесты)
 5. Настроить Nullable, analyzers, `.editorconfig`, единый формат. — выполнено
 6. Настроить unit test infrastructure. — выполнено
-7. Настроить CI для build/test. — workflow добавлен, запуск в GitHub ожидается
+7. Настроить CI для build/test. — выполнено, CI зелёный на Ubuntu и Windows
 8. Добавить базовые docs и PROJECT_STATUS. — выполнено
-9. Проверить Windows build; подготовить Linux CI/build path. — Linux проверен, Windows ожидает CI
-10. Сформировать проверяемый Foundation exit report. — черновик готов, sign-off после CI
+9. Проверить Windows build; подготовить Linux CI/build path. — выполнено в CI
+10. Сформировать проверяемый Foundation exit report. — выполнено, [отчёт](STAGE_1_FOUNDATION_REPORT.md) подписан
 
 ### Критерии завершения
 - Чистый checkout собирается воспроизводимо.

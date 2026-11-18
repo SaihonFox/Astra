@@ -1,8 +1,8 @@
 # Project Status
 
-**Current stage:** Stage 1 — Foundation (in progress)
+**Current stage:** Stage 1 — Foundation completed; Stage 2 not started
 **Specification:** approved by project owner on 2026-11-18
-**Implementation:** solution skeleton and build/test infrastructure exist; product subsystems not started
+**Implementation:** foundation solution, CI and documentation in place; product subsystems not started
 **Last updated:** 2026-11-18
 
 ## Completed
@@ -25,7 +25,7 @@
 - Preliminary technology stack.
 - Final Product Specification approved.
 
-### Stage 1 — Foundation (partial)
+### Stage 1 — Foundation
 - Toolchain verified on 2026-11-18: .NET SDK 10.0.115, Ubuntu 26.04, NuGet reachable.
 - ADRs 0001–0005 accepted by the owner on 2026-11-18 (solution layout,
   configuration/secrets, logging/audit, testing, IPC).
@@ -36,15 +36,17 @@
   central package management, package lock files.
 - Minimal host with `/health` endpoint bound to loopback in development.
 - Integration test for the health endpoint.
-- CI workflow for Linux and Windows added (not yet executed on GitHub). Includes locked
-  restore, Release build, format verification and tests.
+- CI workflow for Ubuntu and Windows: locked restore, Release build, format verification,
+  tests, TRX artifact upload.
+- CI verified green on both platforms: run
+  [44345679716](https://github.com/SaihonFox/Astra/actions/runs/44345679716).
 - Line endings normalized to LF; `.editorconfig` corrected for YAML.
-- Clean-copy verification: restore, build and tests succeed without `bin/obj` and without
-  an existing `packages.lock.json` mutation.
+- Clean-copy verification: restore, build and tests succeed without `bin/obj`.
+- [Foundation report](STAGE_1_FOUNDATION_REPORT.md) signed off.
 
 ## Verification performed
 
-On 2026-11-18, Ubuntu 26.04, SDK 10.0.115:
+Local environment, 2026-11-18, Ubuntu 26.04, SDK 10.0.115:
 
 ```
 dotnet restore AstraAgent.slnx --locked-mode                  → succeeded
@@ -55,15 +57,15 @@ dotnet format AstraAgent.slnx --verify-no-changes             → exit 0
 
 A clean copy without `bin/obj` was restored with `--locked-mode` and passed build and tests.
 
-Windows build and GitHub Actions execution are **not yet verified**.
+GitHub Actions run 44345679716 — **success**:
+
+- `build-test (ubuntu-latest)`: all steps successful.
+- `build-test (windows-latest)`: all steps successful.
 
 ## Current work
 
-Finish Stage 1:
-- Commit and push the repository, including `packages.lock.json` files.
-- Run the CI workflow and record results for Ubuntu and Windows.
-- Verify the Windows build; fix platform issues if any.
-- Sign off [the Foundation report](STAGE_1_FOUNDATION_REPORT.md).
+Stage 2 — Core Infrastructure is not started. It requires ADRs for persistence,
+eventing, configuration providers and the policy foundation before implementation.
 
 ## Not yet implemented
 
@@ -81,7 +83,8 @@ surface, desktop UI, Android client, extensions and learning.
 - Voice stack and local speech models.
 - LoRA/QLoRA feasibility on target hardware.
 - Extension signing/trust model.
-- CI cost/availability and Windows runner coverage for the primary platform.
+- CI actions are pinned by version tags, not commit SHAs; supply-chain hardening pending.
+- Branch protection and required status checks are not configured yet.
 
 ## Reporting rule
 Never mark an item completed without evidence. Record exact build/test commands and results.

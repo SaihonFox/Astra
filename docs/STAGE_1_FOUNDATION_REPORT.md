@@ -1,8 +1,10 @@
 # Stage 1 — Foundation Report
 
-- **Status:** Draft — pending CI execution on GitHub
-- **Date:** 2026-11-18
-- **Environment:** Ubuntu 26.04, .NET SDK 10.0.115, ASP.NET Core runtime 10.0.15
+- **Status:** Signed off — 2026-11-18
+- **Environment:** Ubuntu 26.04, .NET SDK 10.0.115, ASP.NET Core runtime 10.0.15; GitHub
+  Actions Ubuntu and Windows runners
+- **CI run:** [44345679716](https://github.com/SaihonFox/Astra/actions/runs/44345679716)
+  (commit `105961f`) — success on both platforms
 
 ## Scope delivered
 
@@ -22,13 +24,13 @@
 
 | Criterion | Status | Evidence |
 |---|---|---|
-| Clean checkout builds reproducibly | Verified locally | Copy without `bin/obj`, `dotnet restore --locked-mode`, Release build: 0 warnings, 0 errors |
-| Tests run | Verified locally | 1 passed, 0 failed, 0 skipped |
-| CI checks build and tests | Pending | Workflow present; not executed on GitHub yet |
-| Documentation matches structure | Verified | README, DEVELOPMENT, ROADMAP, PROJECT_STATUS updated |
-| No empty projects | Verified | Only `Astra.Host` and `Astra.Host.Tests` exist |
-| Architectural decisions recorded | Verified | ADR 0001–0005 accepted 2026-11-18 |
-| No unrecorded critical risks | Partially verified | Risks recorded in `PROJECT_STATUS.md`; Windows runtime unverified |
+| Clean checkout builds reproducibly | Met | CI checkout + `dotnet restore --locked-mode` + Release build on fresh runners |
+| Tests run | Met | Local and CI: 1 passed, 0 failed, 0 skipped on Ubuntu and Windows |
+| CI checks build and tests | Met | Run 44345679716: all steps successful on both platforms |
+| Documentation matches structure | Met | README, DEVELOPMENT, ROADMAP, PROJECT_STATUS and this report updated |
+| No empty projects | Met | Only `Astra.Host` and `Astra.Host.Tests` exist |
+| Architectural decisions recorded | Met | ADR 0001–0005 accepted 2026-11-18 |
+| No unrecorded critical risks | Met | Risks recorded in `PROJECT_STATUS.md` |
 
 ## Verification log
 
@@ -52,22 +54,27 @@ dotnet build -c Release                                → 0 warnings, 0 errors
 dotnet test -c Release                                 → 1 passed
 ```
 
-## Pending before sign-off
+Cross-target publish (supplementary, not a substitute for Windows execution):
 
-1. Commit and push the repository, including `packages.lock.json` files.
-2. Run `.github/workflows/ci.yml`; record the run URL and results for `ubuntu-latest` and
-   `windows-latest`.
-3. Verify the Windows build result; fix platform issues if any.
-4. Mark Stage 1 completed in `PROJECT_STATUS.md` and `ROADMAP.md`, then start Stage 2.
+```
+dotnet publish src/Astra.Host -c Release -r win-x64 --self-contained false
+→ Astra.Host.exe, Astra.Host.dll, runtimeconfig.json
+```
+
+CI (run 44345679716, commit `105961f`), both jobs successful:
+
+| Job | Restore | Build | Format | Test |
+|---|---|---|---|---|
+| ubuntu-latest | success | success | success | success |
+| windows-latest | success | success | success | success |
 
 ## Known limitations
 
-- Windows execution was not verified from the current Linux environment.
-- GitHub Actions were not executed because no GitHub CLI/credentials are available here.
 - CI actions are pinned by version tags, not commit SHAs; supply-chain hardening is pending.
-- The repository has no committed history for these changes yet.
+- Branch protection and required status checks are not configured.
+- Foundation covers only the host boundary and `/health`; product behavior starts at Stage 2.
 
 ## Conclusion
 
-Foundation scope is implemented and verified on Linux. Stage 1 cannot be signed off until
-the CI run confirms the Windows build and test path.
+All Stage 1 exit criteria are met with recorded evidence. Foundation is complete; Stage 2 —
+Core Infrastructure may begin after its ADRs are drafted and accepted.
