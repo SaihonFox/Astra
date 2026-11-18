@@ -82,7 +82,9 @@
   is healthy.
 - CI green on Ubuntu and Windows for the registry commit: run
   [44351727206](https://github.com/SaihonFox/Astra/actions/runs/44351727206).
-- Not yet verified: CI on the runtime-contract commit; ModelHost, real generation.
+- CI green on Ubuntu and Windows for the runtime-contract commit: run
+  [44352946810](https://github.com/SaihonFox/Astra/actions/runs/44352946810).
+- Not yet verified: ModelHost, real model loading and generation, GPU backend.
 
 ## Verification performed
 

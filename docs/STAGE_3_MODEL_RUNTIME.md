@@ -90,5 +90,6 @@ dotnet test -c Release                  → 59 passed, 0 failed, 0 skipped
 dotnet format --verify-no-changes       → exit 0
 fresh database                          → migrations 1–2, models table, /health 200
 CI run 44351727206 (commit 964f983)      → success on Ubuntu and Windows
+CI run 44352946810 (commit 051bdaa)      → success on Ubuntu and Windows
 ```
 
