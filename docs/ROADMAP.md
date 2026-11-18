@@ -6,7 +6,7 @@
 |---|---|---|
 | 0 | Интервью, аудит, спецификация | Completed |
 | 1 | Foundation | Completed |
-| 2 | Core Infrastructure | In progress |
+| 2 | Core Infrastructure | Completed |
 | 3 | Model Runtime | Not started |
 | 4 | Agent Core | Not started |
 | 5 | Tools & System Integration | Not started |
@@ -59,9 +59,9 @@
 4. Композиция в Host: миграции при старте, health check БД. — выполнено
 5. Serilog: консоль и rolling compact JSON в каталог логов. — выполнено
 6. Тесты core/infrastructure/host. — выполнено (25 тестов)
-7. ADR 0006 (persistence) и ADR 0007 (eventing). — Proposed, ожидают одобрения владельца
+7. ADR 0006 (persistence) и ADR 0007 (eventing). — Accepted 2026-11-18
 8. CI на Ubuntu и Windows. — выполнено, run 44348269884 зелёный
-9. Отчёт этапа. — подготовлен, sign-off после одобрения ADR
+9. Отчёт этапа. — подписан
 
 ### Критерии завершения
 - Свежий каталог данных создаёт мигрированную SQLite БД с WAL.

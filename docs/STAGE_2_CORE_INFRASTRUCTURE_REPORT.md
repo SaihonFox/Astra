@@ -1,7 +1,6 @@
 # Stage 2 — Core Infrastructure Report
 
-- **Status:** Implementation complete, CI verified; sign-off pending owner acceptance of
-  ADR 0006 and ADR 0007
+- **Status:** Signed off — 2026-11-18
 - **Date:** 2026-11-18
 - **Environment:** Ubuntu 26.04, .NET SDK 10.0.115; GitHub Actions Ubuntu and Windows
   runners
@@ -45,7 +44,7 @@
 | `/health` returns 200 only with a working database | Met | Host integration test + runtime check |
 | Serilog writes structured rolling logs without secrets | Met | Runtime check: `logs/astra-20261118.jsonl` compact JSON |
 | Local build/test and CI on Ubuntu/Windows pass | Met | 0 warnings/errors; 25 passed; CI run 44348269884 |
-| Documentation, ADRs and status reflect implementation | Met | This report, ADR 0006/0007, README, DEVELOPMENT, ROADMAP, PROJECT_STATUS |
+| Documentation, ADRs and status reflect implementation | Met | This report, ADR 0006/0007 (accepted 2026-11-18), README, DEVELOPMENT, ROADMAP, PROJECT_STATUS |
 
 ## Verification log
 
@@ -82,7 +81,6 @@ format verification, 25 tests.
 
 ## Known limitations
 
-- ADR 0006 and ADR 0007 are still **Proposed**; owner acceptance is required for sign-off.
 - Central log redaction is not implemented yet. Current events contain no secrets, but tool
   output and user content must not be logged until redaction and security review land.
 - Settings have no API or UI surface yet; this is intentional and belongs to a later stage.
@@ -93,6 +91,6 @@ format verification, 25 tests.
 
 ## Conclusion
 
-Core infrastructure is implemented, tested and green in CI on both target platforms. After
-owner acceptance of ADR 0006/0007, Stage 2 can be signed off and Stage 3 — Model Runtime can
-begin.
+Core infrastructure is implemented, tested and green in CI on both target platforms. ADR
+0006 and ADR 0007 were accepted by the owner on 2026-11-18. Stage 2 is signed off; Stage 3 —
+Model Runtime can begin.

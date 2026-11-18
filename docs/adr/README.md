@@ -24,5 +24,5 @@ approval for changes that affect the product specification.
 | [0003](0003-logging-and-audit.md) | Logging and audit trail | Accepted |
 | [0004](0004-testing-baseline.md) | Testing baseline | Accepted |
 | [0005](0005-ipc-and-process-boundaries.md) | IPC and process boundaries | Accepted |
-| [0006](0006-persistence-sqlite.md) | Persistence baseline — SQLite, migrations, settings | Proposed |
-| [0007](0007-in-process-eventing.md) | In-process eventing | Proposed |
+| [0006](0006-persistence-sqlite.md) | Persistence baseline — SQLite, migrations, settings | Accepted |
+| [0007](0007-in-process-eventing.md) | In-process eventing | Accepted |

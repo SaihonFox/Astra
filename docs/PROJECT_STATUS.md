@@ -1,8 +1,8 @@
 # Project Status
 
-**Current stage:** Stage 2 — Core Infrastructure (in progress)
+**Current stage:** Stage 2 — Core Infrastructure completed; Stage 3 not started
 **Specification:** approved by project owner on 2026-11-18
-**Implementation:** foundation plus core infrastructure (SQLite, migrations, settings, event bus, Serilog); product subsystems not started
+**Implementation:** foundation and core infrastructure complete; product subsystems not started
 **Last updated:** 2026-11-18
 
 ## Completed
@@ -44,7 +44,7 @@
 - Clean-copy verification: restore, build and tests succeed without `bin/obj`.
 - [Foundation report](STAGE_1_FOUNDATION_REPORT.md) signed off.
 
-### Stage 2 — Core Infrastructure (in progress)
+### Stage 2 — Core Infrastructure
 - `Astra.Core` contracts: `IClock`, `IEventBus`, `EventEnvelope`, `ISettingsStore`.
 - `Astra.Infrastructure`:
   - `AstraPaths` with data-root resolution, storage areas and owner-only Unix permissions;
@@ -57,13 +57,10 @@
 - Host composition: data directory and migrations at startup, database health check in
   `/health`, Serilog console + rolling compact JSON file logging.
 - 25 tests across core, infrastructure and host.
-- ADR 0006 (persistence) and ADR 0007 (eventing) drafted — **Proposed**, owner acceptance
-  pending.
+- ADR 0006 (persistence) and ADR 0007 (eventing) accepted by the owner on 2026-11-18.
 - CI green on Ubuntu and Windows: run
   [44348269884](https://github.com/SaihonFox/Astra/actions/runs/44348269884).
-- [Stage 2 report](STAGE_2_CORE_INFRASTRUCTURE_REPORT.md) prepared; sign-off pending ADR
-  acceptance.
-- Not yet verified: none for the implementation scope.
+- [Stage 2 report](STAGE_2_CORE_INFRASTRUCTURE_REPORT.md) signed off.
 
 ## Verification performed
 
@@ -95,13 +92,9 @@ GitHub Actions run 44345679716 — **success** (Stage 1 commit):
 
 ## Current work
 
-Finish Stage 2:
-- Owner acceptance of ADR 0006 and ADR 0007.
-- Sign off `docs/STAGE_2_CORE_INFRASTRUCTURE_REPORT.md`.
-- Decide whether persisted settings get an API surface in a later stage.
-
-Policy Engine is not part of Stage 2: the specification places it in Agent Core (Stage 4),
-and changes to it require explicit owner approval.
+Stage 3 — Model Runtime is not started. The first step is an ADR for the local inference
+runtime strategy (llama.cpp integration, ModelHost lifecycle, model registry) and hardware
+validation on the target Windows machine. Policy Engine remains Stage 4.
 
 ## Not yet implemented
 

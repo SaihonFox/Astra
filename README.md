@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/SaihonFox/Astra/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/SaihonFox/Astra/actions/workflows/ci.yml)
 
-**Статус:** Этап 1 — Foundation завершён; Этап 2 — Core Infrastructure в работе
+**Статус:** Этап 2 — Core Infrastructure завершён; Этап 3 не начат
 **Основная платформа:** Windows  
 **Дополнительная платформа:** Linux  
 **Клиент:** Android  

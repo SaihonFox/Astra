@@ -9,13 +9,13 @@
   - in-process event bus with failure-isolated delivery;
   - `AstraPaths` data-root and storage-area resolution;
   - host startup migration, database health check and Serilog logging.
-- ADRs 0006 (persistence) and 0007 (eventing), proposed.
+- ADRs 0006 (persistence) and 0007 (eventing), accepted 2026-11-18.
 - Tests for core contracts, infrastructure and host database initialization (25 total).
 - `docs/STAGE_2_CORE_INFRASTRUCTURE.md` plan.
-- `docs/STAGE_2_CORE_INFRASTRUCTURE_REPORT.md` (pending ADR acceptance).
+- `docs/STAGE_2_CORE_INFRASTRUCTURE_REPORT.md` (signed off).
 
 ### Changed
-- Stage 2 — Core Infrastructure in progress.
+- Stage 2 — Core Infrastructure completed and signed off; ADRs 0006/0007 accepted.
 - CI verified green on Ubuntu and Windows for the Stage 2 commit (run 44348269884).
 - Foundation solution `AstraAgent.slnx`.
 - `Astra.Host` composition root with `/health` endpoint.
