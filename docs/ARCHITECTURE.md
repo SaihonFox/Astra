@@ -39,6 +39,16 @@ Conversation state, memory, task state, tool contracts, and project data must no
 
 Events are versioned and carry stable IDs, task correlation, timestamps, type, payload schema/version. Event delivery should be resilient to reconnects and process restarts.
 
+## Infrastructure baseline
+
+- Persistence: SQLite through `Microsoft.Data.Sqlite`, append-only checksum-verified
+  migrations, WAL mode. The host is the only writer at this stage (ADR 0006).
+- Settings: small non-secret values in SQLite; secrets use OS secret stores (ADR 0002).
+- Eventing: typed in-process bus with the versioned envelope; not durable yet (ADR 0007).
+- Logging: Serilog structured logs to console and rolling compact JSON files (ADR 0003).
+- Data root: OS local application-data directory plus `Astra`, overridable via
+  `ASTRA_DATA_DIR` or `Astra:DataDirectory`.
+
 ## Architecture decisions
 
 Record significant decisions in `docs/adr/` using the template. Revisit a decision only with evidence and a new ADR.

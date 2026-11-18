@@ -1,8 +1,12 @@
 <Solution>
   <Folder Name="/src/">
+    <Project Path="src/Astra.Core/Astra.Core.csproj" />
     <Project Path="src/Astra.Host/Astra.Host.csproj" />
+    <Project Path="src/Astra.Infrastructure/Astra.Infrastructure.csproj" />
   </Folder>
   <Folder Name="/tests/">
+    <Project Path="tests/Astra.Core.Tests/Astra.Core.Tests.csproj" />
     <Project Path="tests/Astra.Host.Tests/Astra.Host.Tests.csproj" />
+    <Project Path="tests/Astra.Infrastructure.Tests/Astra.Infrastructure.Tests.csproj" />
   </Folder>
 </Solution>

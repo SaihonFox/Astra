@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/SaihonFox/Astra/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/SaihonFox/Astra/actions/workflows/ci.yml)
 
-**Статус:** Этап 1 — Foundation завершён; Этап 2 не начат
+**Статус:** Этап 1 — Foundation завершён; Этап 2 — Core Infrastructure в работе
 **Основная платформа:** Windows  
 **Дополнительная платформа:** Linux  
 **Клиент:** Android  
@@ -20,15 +20,15 @@ Astra Agent — персональный автономный локальный
 
 ## Текущее состояние
 
-Каркас Foundation: solution `AstraAgent.slnx`, хост `Astra.Host` с `/health`, интеграционный тест и CI для Linux/Windows. Продуктовые подсистемы ещё не реализованы.
+Каркас Foundation и базовая инфраструктура: solution `AstraAgent.slnx`, хост `Astra.Host`, SQLite с миграциями, in-process event bus, настройки, Serilog-логирование, health check и CI для Linux/Windows. Продуктовые подсистемы (Agent Core, модели, память) ещё не реализованы.
 
 Проверено на .NET SDK 10.0.115 (Ubuntu 26.04):
 
 ```bash
-dotnet restore AstraAgent.slnx
+dotnet restore AstraAgent.slnx --locked-mode
 dotnet build AstraAgent.slnx --no-restore -c Release
 dotnet test AstraAgent.slnx --no-build -c Release
-dotnet run --project src/Astra.Host
+ASTRA_DATA_DIR=/tmp/astra-data dotnet run --project src/Astra.Host
 curl http://127.0.0.1:5298/health
 ```
 
@@ -47,6 +47,7 @@ MIT — см. [LICENSE](LICENSE). Сторонние зависимости и �
 - [Разработка](docs/DEVELOPMENT.md)
 - [Архитектурные решения (ADR)](docs/adr/README.md)
 - [Отчёт Stage 1 — Foundation](docs/STAGE_1_FOUNDATION_REPORT.md)
+- [План Stage 2 — Core Infrastructure](docs/STAGE_2_CORE_INFRASTRUCTURE.md)
 - [Навыки агентов](skills/README.md)
 
 ## Правило начала работ

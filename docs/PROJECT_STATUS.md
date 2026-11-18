@@ -1,8 +1,8 @@
 # Project Status
 
-**Current stage:** Stage 1 — Foundation completed; Stage 2 not started
+**Current stage:** Stage 2 — Core Infrastructure (in progress)
 **Specification:** approved by project owner on 2026-11-18
-**Implementation:** foundation solution, CI and documentation in place; product subsystems not started
+**Implementation:** foundation plus core infrastructure (SQLite, migrations, settings, event bus, Serilog); product subsystems not started
 **Last updated:** 2026-11-18
 
 ## Completed
@@ -44,6 +44,25 @@
 - Clean-copy verification: restore, build and tests succeed without `bin/obj`.
 - [Foundation report](STAGE_1_FOUNDATION_REPORT.md) signed off.
 
+### Stage 2 — Core Infrastructure (in progress)
+- `Astra.Core` contracts: `IClock`, `IEventBus`, `EventEnvelope`, `ISettingsStore`.
+- `Astra.Infrastructure`:
+  - `AstraPaths` with data-root resolution, storage areas and owner-only Unix permissions;
+  - SQLite connection factory with WAL, foreign keys, busy timeout and parameterized SQL;
+  - checksum-verified append-only migration runner;
+  - first migration creating the `settings` table;
+  - SQLite settings store with key/value validation;
+  - thread-safe in-process event bus with sequential, failure-isolated delivery;
+  - system clock.
+- Host composition: data directory and migrations at startup, database health check in
+  `/health`, Serilog console + rolling compact JSON file logging.
+- 25 tests across core, infrastructure and host.
+- ADR 0006 (persistence) and ADR 0007 (eventing) drafted — **Proposed**, owner acceptance
+  pending.
+- Verified locally: database created with WAL, `settings` table and migration record;
+  structured log file written; `/health` returns 200 only with a working database.
+- Not yet verified: CI on the Stage 2 commit; Stage 2 report.
+
 ## Verification performed
 
 Local environment, 2026-11-18, Ubuntu 26.04, SDK 10.0.115:
@@ -51,21 +70,37 @@ Local environment, 2026-11-18, Ubuntu 26.04, SDK 10.0.115:
 ```
 dotnet restore AstraAgent.slnx --locked-mode                  → succeeded
 dotnet build AstraAgent.slnx --no-restore -c Release          → 0 warnings, 0 errors
-dotnet test AstraAgent.slnx --no-build -c Release             → 1 passed, 0 failed, 0 skipped
+dotnet test AstraAgent.slnx --no-build -c Release             → 25 passed, 0 failed, 0 skipped
 dotnet format AstraAgent.slnx --verify-no-changes             → exit 0
+```
+
+Runtime check with a temporary data root:
+
+```
+ASTRA_DATA_DIR=<temp> dotnet run --project src/Astra.Host
+GET /health                                                   → 200 "Healthy"
+database/astra.db                                             → journal_mode=wal,
+                                                                schema_migrations + settings
+logs/astra-<date>.jsonl                                       → compact JSON log lines
 ```
 
 A clean copy without `bin/obj` was restored with `--locked-mode` and passed build and tests.
 
-GitHub Actions run 44345679716 — **success**:
+GitHub Actions run 44345679716 — **success** (Stage 1 commit):
 
 - `build-test (ubuntu-latest)`: all steps successful.
 - `build-test (windows-latest)`: all steps successful.
 
 ## Current work
 
-Stage 2 — Core Infrastructure is not started. It requires ADRs for persistence,
-eventing, configuration providers and the policy foundation before implementation.
+Finish Stage 2:
+- Owner acceptance of ADR 0006 and ADR 0007.
+- Commit, push and verify CI on Ubuntu and Windows.
+- Produce `docs/STAGE_2_CORE_INFRASTRUCTURE_REPORT.md`.
+- Decide whether persisted settings get an API surface in a later stage.
+
+Policy Engine is not part of Stage 2: the specification places it in Agent Core (Stage 4),
+and changes to it require explicit owner approval.
 
 ## Not yet implemented
 

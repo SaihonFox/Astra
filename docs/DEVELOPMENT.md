@@ -19,11 +19,15 @@ AstraAgent.slnx            solution (projects added only when they have a purpos
 global.json                SDK band
 Directory.Build.props      shared compiler, analyzer and build settings
 Directory.Packages.props   central package versions
-src/Astra.Host/            composition root and ASP.NET Core boundary (Stage 1)
+src/Astra.Core/            model-independent contracts (clock, events, settings)
+src/Astra.Infrastructure/  SQLite, migrations, event bus, paths, system clock
+src/Astra.Host/            composition root and ASP.NET Core boundary
+tests/Astra.Core.Tests/
+tests/Astra.Infrastructure.Tests/
 tests/Astra.Host.Tests/    integration tests for the host
-docs/                      specification, architecture, ADRs, status
+docs/                      specification, architecture, ADRs, status, stage reports
 skills/, prompts/          guidance for coding agents
-.github/workflows/ci.yml   Linux + Windows build/test
+.github/workflows/ci.yml   Ubuntu + Windows build/test
 ```
 
 ## Repository conventions
@@ -45,12 +49,16 @@ skills/, prompts/          guidance for coding agents
 Verified with SDK 10.0.115 on Ubuntu 26.04:
 
 ```bash
-dotnet restore AstraAgent.slnx
+dotnet restore AstraAgent.slnx --locked-mode
 dotnet build AstraAgent.slnx --no-restore -c Release
 dotnet test AstraAgent.slnx --no-build -c Release
-dotnet run --project src/Astra.Host
+ASTRA_DATA_DIR=/tmp/astra-data dotnet run --project src/Astra.Host
 curl http://127.0.0.1:5298/health
 ```
+
+The host creates `<data root>/database/astra.db` and `<data root>/logs/astra-*.jsonl`.
+Without `ASTRA_DATA_DIR` (or `Astra:DataDirectory`), the data root is the OS local
+application-data directory plus `Astra`. Tests always use temporary directories.
 
 CI runs with `--locked-mode` restore. Keep lock files committed.
 

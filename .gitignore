@@ -22,3 +22,7 @@ backups/
 .cache/
 
 **/TestResults/
+
+*.db
+*.db-wal
+*.db-shm

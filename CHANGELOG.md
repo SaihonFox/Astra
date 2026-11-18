@@ -3,6 +3,18 @@
 ## Unreleased
 
 ### Added
+- Stage 2 core infrastructure:
+  - `Astra.Core` contracts (`IClock`, `IEventBus`, `EventEnvelope`, `ISettingsStore`);
+  - SQLite persistence with WAL, checksum-verified migrations and settings table;
+  - in-process event bus with failure-isolated delivery;
+  - `AstraPaths` data-root and storage-area resolution;
+  - host startup migration, database health check and Serilog logging.
+- ADRs 0006 (persistence) and 0007 (eventing), proposed.
+- Tests for core contracts, infrastructure and host database initialization (25 total).
+- `docs/STAGE_2_CORE_INFRASTRUCTURE.md` plan.
+
+### Changed
+- Stage 2 — Core Infrastructure in progress.
 - Foundation solution `AstraAgent.slnx`.
 - `Astra.Host` composition root with `/health` endpoint.
 - `Astra.Host.Tests` integration test project.

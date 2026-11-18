@@ -1,23 +1,24 @@
 using System.Net;
-using Microsoft.AspNetCore.Mvc.Testing;
 
 namespace Astra.Host.Tests;
 
-public sealed class HealthEndpointTests : IClassFixture<WebApplicationFactory<Program>>
+public sealed class HealthEndpointTests : IClassFixture<AstraWebApplicationFactory>
 {
-	private readonly WebApplicationFactory<Program> _factory;
+	private readonly AstraWebApplicationFactory _factory;
 
-	public HealthEndpointTests(WebApplicationFactory<Program> factory)
+	public HealthEndpointTests(AstraWebApplicationFactory factory)
 	{
 		_factory = factory;
 	}
 
 	[Fact]
-	public async Task HealthEndpointReturnsOk()
+	public async Task HealthEndpointReturnsHealthyAndCreatesDatabase()
 	{
 		using var client = _factory.CreateClient();
 		using var response = await client.GetAsync("/health");
 
 		Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+		Assert.Equal("Healthy", await response.Content.ReadAsStringAsync());
+		Assert.True(File.Exists(Path.Combine(_factory.DataDirectory, "database", "astra.db")));
 	}
 }
