@@ -121,6 +121,8 @@ surface, desktop UI, Android client, extensions and learning.
 - Extension signing/trust model.
 - CI actions are pinned by version tags, not commit SHAs; supply-chain hardening pending.
 - Branch protection and required status checks are not configured yet.
+- Central log redaction is not implemented; required before tool output or user content is
+  logged. Audit trail storage is also pending (Stage 4 with the Policy Engine).
 
 ## Reporting rule
 Never mark an item completed without evidence. Record exact build/test commands and results.

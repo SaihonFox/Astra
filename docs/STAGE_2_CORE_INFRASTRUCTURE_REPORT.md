@@ -83,6 +83,8 @@ format verification, 25 tests.
 ## Known limitations
 
 - ADR 0006 and ADR 0007 are still **Proposed**; owner acceptance is required for sign-off.
+- Central log redaction is not implemented yet. Current events contain no secrets, but tool
+  output and user content must not be logged until redaction and security review land.
 - Settings have no API or UI surface yet; this is intentional and belongs to a later stage.
 - Event bus is not durable and has no outbox; cross-process events remain future work.
 - Backup, encryption and restore are not implemented.
