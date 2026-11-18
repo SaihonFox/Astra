@@ -45,7 +45,7 @@ yet decide which model to use; it will consume this runtime in Stage 4.
 |---|---|---|
 | 3.1 | ADR 0008 and environment probe | ADR Proposed; probe done (no GPU here) |
 | 3.2 | Model registry (schema, store, tests) | Completed |
-| 3.3 | Runtime contract and fake runtime | Planned |
+| 3.3 | Runtime contract and fake runtime | Completed |
 | 3.4 | ModelHost process and IPC contract | Planned |
 | 3.5 | LLamaSharp adapter and CPU backend | Planned |
 | 3.6 | Optional CUDA 12 backend on target hardware | Planned |
@@ -79,3 +79,16 @@ yet decide which model to use; it will consume this runtime in Stage 4.
 - Model metadata includes license/source; no weights in git.
 - Cancellation and timeouts are mandatory for generation.
 - GPU/native asset integrity is reviewed before distribution.
+
+## Verification
+
+Registry phase, 2026-11-18:
+
+```
+dotnet build -c Release                 → 0 warnings, 0 errors
+dotnet test -c Release                  → 59 passed, 0 failed, 0 skipped
+dotnet format --verify-no-changes       → exit 0
+fresh database                          → migrations 1–2, models table, /health 200
+CI run 44351727206 (commit 964f983)      → success on Ubuntu and Windows
+```
+

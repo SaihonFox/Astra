@@ -72,10 +72,17 @@
   identifier/path and a name index.
 - `SqliteModelRegistry`: CRUD, duplicate protection, registry-managed timestamps and live
   file availability checks; registered in Host DI.
-- 41 tests total (5 core, 34 infrastructure, 2 host).
+- Runtime contract in `Astra.Core.Inference`: `ILocalModelRuntime`, load options,
+  generation and embedding requests, streamed chunks, shared validation rules.
+- Deterministic fake runtime and contract tests: load/unload/dispose, single active model,
+  streamed generation, max-token limit, cancellation, deterministic embeddings and input
+  validation.
+- 59 tests total (23 core, 34 infrastructure, 2 host).
 - Verified locally: fresh database applies migrations 1–2, exposes `models`, and `/health`
   is healthy.
-- Not yet verified: CI on the Stage 3 commit; runtime contract, ModelHost, real generation.
+- CI green on Ubuntu and Windows for the registry commit: run
+  [44351727206](https://github.com/SaihonFox/Astra/actions/runs/44351727206).
+- Not yet verified: CI on the runtime-contract commit; ModelHost, real generation.
 
 ## Verification performed
 
@@ -84,7 +91,7 @@ Local environment, 2026-11-18, Ubuntu 26.04, SDK 10.0.115:
 ```
 dotnet restore AstraAgent.slnx --locked-mode                  → succeeded
 dotnet build AstraAgent.slnx --no-restore -c Release          → 0 warnings, 0 errors
-dotnet test AstraAgent.slnx --no-build -c Release             → 41 passed, 0 failed, 0 skipped
+dotnet test AstraAgent.slnx --no-build -c Release             → 59 passed, 0 failed, 0 skipped
 dotnet format AstraAgent.slnx --verify-no-changes             → exit 0
 ```
 

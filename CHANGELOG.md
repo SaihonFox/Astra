@@ -10,8 +10,14 @@
   - `SqliteModelRegistry` with CRUD, duplicate protection, managed timestamps and live
     availability checks, wired into Host DI;
   - tests for registry round-trip, ordering, duplicates, updates, deletion, availability
-    and validation (suite now 41 tests);
-  - `docs/STAGE_3_MODEL_RUNTIME.md` plan and proposed ADR 0008.
+    and validation.
+- Stage 3 runtime contract:
+  - `ILocalModelRuntime`, load options, generation/embedding requests, streamed chunks and
+    shared validation rules in `Astra.Core.Inference`;
+  - deterministic fake runtime and contract tests (load state, single active model,
+    streaming, token limit, cancellation, embeddings, input validation);
+  - suite now 59 tests.
+- `docs/STAGE_3_MODEL_RUNTIME.md` plan and proposed ADR 0008.
 - Stage 2 core infrastructure:
   - `Astra.Core` contracts (`IClock`, `IEventBus`, `EventEnvelope`, `ISettingsStore`);
   - SQLite persistence with WAL, checksum-verified migrations and settings table;
