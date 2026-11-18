@@ -21,7 +21,14 @@ public sealed class DatabaseMigratorTests
 			await ScalarAsync(
 				connection,
 				"SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name = 'settings';"));
-		Assert.Equal(1L, await ScalarAsync(connection, "SELECT COUNT(*) FROM schema_migrations;"));
+		Assert.Equal(
+			1L,
+			await ScalarAsync(
+				connection,
+				"SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name = 'models';"));
+		Assert.Equal(
+			(long)AstraMigrations.All.Count,
+			await ScalarAsync(connection, "SELECT COUNT(*) FROM schema_migrations;"));
 	}
 
 	[Fact]
@@ -33,7 +40,9 @@ public sealed class DatabaseMigratorTests
 		await database.Migrator.MigrateAsync();
 
 		await using var connection = await database.Factory.OpenAsync();
-		Assert.Equal(1L, await ScalarAsync(connection, "SELECT COUNT(*) FROM schema_migrations;"));
+		Assert.Equal(
+			(long)AstraMigrations.All.Count,
+			await ScalarAsync(connection, "SELECT COUNT(*) FROM schema_migrations;"));
 	}
 
 	[Fact]

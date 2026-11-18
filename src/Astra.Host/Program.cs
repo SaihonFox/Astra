@@ -1,5 +1,6 @@
 using System.Globalization;
 using Astra.Core;
+using Astra.Core.Models;
 using Astra.Host.Health;
 using Astra.Infrastructure;
 using Astra.Infrastructure.Database;
@@ -32,6 +33,7 @@ builder.Services.AddSingleton<SqliteConnectionFactory>();
 builder.Services.AddSingleton<IReadOnlyList<DatabaseMigration>>(AstraMigrations.All);
 builder.Services.AddSingleton<DatabaseMigrator>();
 builder.Services.AddSingleton<ISettingsStore, SqliteSettingsStore>();
+builder.Services.AddSingleton<IModelRegistry, SqliteModelRegistry>();
 builder.Services.AddHealthChecks().AddCheck<DatabaseHealthCheck>("database");
 
 var app = builder.Build();

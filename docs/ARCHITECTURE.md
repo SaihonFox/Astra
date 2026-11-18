@@ -48,6 +48,8 @@ Events are versioned and carry stable IDs, task correlation, timestamps, type, p
 - Logging: Serilog structured logs to console and rolling compact JSON files (ADR 0003).
 - Data root: OS local application-data directory plus `Astra`, overridable via
   `ASTRA_DATA_DIR` or `Astra:DataDirectory`.
+- Model registry: model descriptors and metadata in SQLite, live file availability checks
+  (ADR 0006 schema, migration 2). Runtime for actual inference is not implemented yet.
 
 ## Architecture decisions
 

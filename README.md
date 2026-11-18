@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/SaihonFox/Astra/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/SaihonFox/Astra/actions/workflows/ci.yml)
 
-**Статус:** Этап 2 — Core Infrastructure завершён; Этап 3 не начат
+**Статус:** Этап 2 — Core Infrastructure завершён; Этап 3 — Model Runtime в работе
 **Основная платформа:** Windows  
 **Дополнительная платформа:** Linux  
 **Клиент:** Android  
@@ -20,7 +20,7 @@ Astra Agent — персональный автономный локальный
 
 ## Текущее состояние
 
-Каркас Foundation и базовая инфраструктура: solution `AstraAgent.slnx`, хост `Astra.Host`, SQLite с миграциями, in-process event bus, настройки, Serilog-логирование, health check и CI для Linux/Windows. Продуктовые подсистемы (Agent Core, модели, память) ещё не реализованы.
+Каркас Foundation, базовая инфраструктура и реестр моделей: solution `AstraAgent.slnx`, хост `Astra.Host`, SQLite с миграциями, in-process event bus, настройки, реестр моделей, Serilog-логирование, health check и CI для Linux/Windows. Runtime инференса, Agent Core и память ещё не реализованы.
 
 Проверено на .NET SDK 10.0.115 (Ubuntu 26.04):
 
@@ -49,6 +49,7 @@ MIT — см. [LICENSE](LICENSE). Сторонние зависимости и �
 - [Отчёт Stage 1 — Foundation](docs/STAGE_1_FOUNDATION_REPORT.md)
 - [План Stage 2 — Core Infrastructure](docs/STAGE_2_CORE_INFRASTRUCTURE.md)
 - [Отчёт Stage 2 — Core Infrastructure](docs/STAGE_2_CORE_INFRASTRUCTURE_REPORT.md)
+- [План Stage 3 — Model Runtime](docs/STAGE_3_MODEL_RUNTIME.md)
 - [Навыки агентов](skills/README.md)
 
 ## Правило начала работ

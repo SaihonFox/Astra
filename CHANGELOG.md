@@ -3,6 +3,15 @@
 ## Unreleased
 
 ### Added
+- Stage 3 model registry:
+  - `Astra.Core` model contracts and validation (`ModelDescriptor`, capabilities, test
+    status, availability, `IModelRegistry`);
+  - migration 2 creating the `models` table with constraints and a name index;
+  - `SqliteModelRegistry` with CRUD, duplicate protection, managed timestamps and live
+    availability checks, wired into Host DI;
+  - tests for registry round-trip, ordering, duplicates, updates, deletion, availability
+    and validation (suite now 41 tests);
+  - `docs/STAGE_3_MODEL_RUNTIME.md` plan and proposed ADR 0008.
 - Stage 2 core infrastructure:
   - `Astra.Core` contracts (`IClock`, `IEventBus`, `EventEnvelope`, `ISettingsStore`);
   - SQLite persistence with WAL, checksum-verified migrations and settings table;
@@ -15,6 +24,7 @@
 - `docs/STAGE_2_CORE_INFRASTRUCTURE_REPORT.md` (signed off).
 
 ### Changed
+- Stage 3 — Model Runtime in progress; model registry completed, runtime not started.
 - Stage 2 — Core Infrastructure completed and signed off; ADRs 0006/0007 accepted.
 - CI verified green on Ubuntu and Windows for the Stage 2 commit (run 44348269884).
 - Foundation solution `AstraAgent.slnx`.
