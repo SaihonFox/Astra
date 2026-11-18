@@ -5,7 +5,7 @@
 | Этап | Название | Статус |
 |---|---|---|
 | 0 | Интервью, аудит, спецификация | Completed |
-| 1 | Foundation | Not started |
+| 1 | Foundation | In progress |
 | 2 | Core Infrastructure | Not started |
 | 3 | Model Runtime | Not started |
 | 4 | Agent Core | Not started |
@@ -25,17 +25,17 @@
 ### Цель
 Подготовить воспроизводимую инженерную основу без преждевременной реализации продуктовых подсистем.
 
-### Предлагаемые задачи
-1. Проверить SDK, IDE/toolchain и целевые платформы.
-2. Зафиксировать ADR: solution layout, dependency direction, configuration, logging, testing, IPC strategy (не обязательно реализовывать IPC сразу).
-3. Создать минимальный `.slnx`.
-4. Создать только реально необходимые проекты.
-5. Настроить Nullable, analyzers, `.editorconfig`, единый формат.
-6. Настроить unit test infrastructure.
-7. Настроить CI для build/test.
-8. Добавить базовые docs и PROJECT_STATUS.
-9. Проверить Windows build; подготовить Linux CI/build path.
-10. Сформировать проверяемый Foundation exit report.
+### Задачи
+1. Проверить SDK, IDE/toolchain и целевые платформы. — выполнено локально (Linux)
+2. Зафиксировать ADR: solution layout, dependency direction, configuration, logging, testing, IPC strategy. — ADR 0001–0005 accepted 2026-11-18
+3. Создать минимальный `.slnx`. — выполнено
+4. Создать только реально необходимые проекты. — выполнено (`Astra.Host` + тесты)
+5. Настроить Nullable, analyzers, `.editorconfig`, единый формат. — выполнено
+6. Настроить unit test infrastructure. — выполнено
+7. Настроить CI для build/test. — workflow добавлен, запуск в GitHub ожидается
+8. Добавить базовые docs и PROJECT_STATUS. — выполнено
+9. Проверить Windows build; подготовить Linux CI/build path. — Linux проверен, Windows ожидает CI
+10. Сформировать проверяемый Foundation exit report. — черновик готов, sign-off после CI
 
 ### Критерии завершения
 - Чистый checkout собирается воспроизводимо.

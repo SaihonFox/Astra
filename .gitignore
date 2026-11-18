@@ -20,3 +20,5 @@ models/*.bin
 models/*.safetensors
 backups/
 .cache/
+
+**/TestResults/
