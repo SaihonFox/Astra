@@ -59,9 +59,11 @@
 - 25 tests across core, infrastructure and host.
 - ADR 0006 (persistence) and ADR 0007 (eventing) drafted — **Proposed**, owner acceptance
   pending.
-- Verified locally: database created with WAL, `settings` table and migration record;
-  structured log file written; `/health` returns 200 only with a working database.
-- Not yet verified: CI on the Stage 2 commit; Stage 2 report.
+- CI green on Ubuntu and Windows: run
+  [44348269884](https://github.com/SaihonFox/Astra/actions/runs/44348269884).
+- [Stage 2 report](STAGE_2_CORE_INFRASTRUCTURE_REPORT.md) prepared; sign-off pending ADR
+  acceptance.
+- Not yet verified: none for the implementation scope.
 
 ## Verification performed
 
@@ -95,8 +97,7 @@ GitHub Actions run 44345679716 — **success** (Stage 1 commit):
 
 Finish Stage 2:
 - Owner acceptance of ADR 0006 and ADR 0007.
-- Commit, push and verify CI on Ubuntu and Windows.
-- Produce `docs/STAGE_2_CORE_INFRASTRUCTURE_REPORT.md`.
+- Sign off `docs/STAGE_2_CORE_INFRASTRUCTURE_REPORT.md`.
 - Decide whether persisted settings get an API surface in a later stage.
 
 Policy Engine is not part of Stage 2: the specification places it in Agent Core (Stage 4),

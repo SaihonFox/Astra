@@ -48,6 +48,7 @@ MIT — см. [LICENSE](LICENSE). Сторонние зависимости и �
 - [Архитектурные решения (ADR)](docs/adr/README.md)
 - [Отчёт Stage 1 — Foundation](docs/STAGE_1_FOUNDATION_REPORT.md)
 - [План Stage 2 — Core Infrastructure](docs/STAGE_2_CORE_INFRASTRUCTURE.md)
+- [Отчёт Stage 2 — Core Infrastructure](docs/STAGE_2_CORE_INFRASTRUCTURE_REPORT.md)
 - [Навыки агентов](skills/README.md)
 
 ## Правило начала работ

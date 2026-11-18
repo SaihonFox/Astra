@@ -12,9 +12,11 @@
 - ADRs 0006 (persistence) and 0007 (eventing), proposed.
 - Tests for core contracts, infrastructure and host database initialization (25 total).
 - `docs/STAGE_2_CORE_INFRASTRUCTURE.md` plan.
+- `docs/STAGE_2_CORE_INFRASTRUCTURE_REPORT.md` (pending ADR acceptance).
 
 ### Changed
 - Stage 2 — Core Infrastructure in progress.
+- CI verified green on Ubuntu and Windows for the Stage 2 commit (run 44348269884).
 - Foundation solution `AstraAgent.slnx`.
 - `Astra.Host` composition root with `/health` endpoint.
 - `Astra.Host.Tests` integration test project.

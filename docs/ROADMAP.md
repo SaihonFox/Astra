@@ -60,8 +60,8 @@
 5. Serilog: консоль и rolling compact JSON в каталог логов. — выполнено
 6. Тесты core/infrastructure/host. — выполнено (25 тестов)
 7. ADR 0006 (persistence) и ADR 0007 (eventing). — Proposed, ожидают одобрения владельца
-8. CI на Ubuntu и Windows. — ожидает пуша Stage 2
-9. Отчёт этапа. — не начат
+8. CI на Ubuntu и Windows. — выполнено, run 44348269884 зелёный
+9. Отчёт этапа. — подготовлен, sign-off после одобрения ADR
 
 ### Критерии завершения
 - Свежий каталог данных создаёт мигрированную SQLite БД с WAL.
