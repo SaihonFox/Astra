@@ -110,6 +110,7 @@ dotnet format --verify-no-changes        → exit 0
 - Transport on this machine: Unix domain socket under the data root's `ipc` directory;
   socket created as `0755` inside a `0700` directory, so only the owner can connect.
 - The process does not bind TCP; the only listener is the local endpoint.
-- Windows named-pipe behavior is covered by CI on `windows-latest`; local verification
-  here cannot exercise it.
+- CI run 44460539305 (commit 8a723d0) → success on Ubuntu and Windows. The Windows job
+  exercised the named-pipe transport and the same IPC tests; local verification here
+  cannot.
 

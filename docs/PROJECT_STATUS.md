@@ -96,7 +96,10 @@
   [44351727206](https://github.com/SaihonFox/Astra/actions/runs/44351727206).
 - CI green on Ubuntu and Windows for the runtime-contract commit: run
   [44352946810](https://github.com/SaihonFox/Astra/actions/runs/44352946810).
-- Not yet verified: ModelHost, real model loading and generation, GPU backend.
+- CI green on Ubuntu and Windows for the ModelHost IPC commit: run
+  [44460539305](https://github.com/SaihonFox/Astra/actions/runs/44460539305).
+  Ubuntu exercised Unix sockets, Windows exercised named pipes.
+- Not yet verified: real model loading and generation, GPU backend.
 
 ## Verification performed
 
