@@ -127,6 +127,12 @@
   [44462869583](https://github.com/SaihonFox/Astra/actions/runs/44462869583).
 - CI green on Ubuntu and Windows for supervision, admission and the hardware runbook: run
   [44464487382](https://github.com/SaihonFox/Astra/actions/runs/44464487382).
+- CI green on Ubuntu and Windows for GPU capability logging: run
+  [44468595677](https://github.com/SaihonFox/Astra/actions/runs/44468595677).
+- Known flake: Windows failed once in run
+  [44464834270](https://github.com/SaihonFox/Astra/actions/runs/44464834270) on a docs-only
+  commit, then passed with the same test code. The workflow now reports failed tests through
+  annotations and the step summary so the next occurrence names the test.
 - Not yet verified: CPU inference on Windows, CUDA offload on the GTX 1650, and Host-side
   wiring of the supervisor.
 

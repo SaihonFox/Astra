@@ -162,4 +162,11 @@ dotnet format --verify-no-changes        → exit 0
   packages and native backend present.
 - CI run 44464487382 (commit 91489a1) → success on Ubuntu and Windows with supervision,
   admission and the hardware-gated test present.
+- CI run 44468595677 (commit b274875) → success on Ubuntu and Windows with GPU capability
+  logging and TRX failure reporting in the workflow.
+- One earlier docs-only commit (8806994, run 44464834270) failed on Windows within the test
+  step while the identical binaries passed before and after. The failing test is unknown:
+  the job log and TRX artifact are not reachable without an authenticated GitHub token. The
+  workflow now writes failed test names and messages to the step summary and to error
+  annotations, so a recurrence is diagnosable.
 
