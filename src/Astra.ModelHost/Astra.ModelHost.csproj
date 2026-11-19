@@ -5,10 +5,19 @@
     <IsPackable>false</IsPackable>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(UseCuda)' == 'true'">
+    <!--
+      Optional CUDA 12 backend. It has its own lock file under obj/ so the committed CPU lock
+      file stays unchanged; CI never passes UseCuda=true.
+    -->
+    <NuGetLockFilePath>$(MSBuildProjectDirectory)/obj/packages.cuda.lock.json</NuGetLockFilePath>
+  </PropertyGroup>
+
   <ItemGroup>
     <PackageReference Include="Grpc.AspNetCore" />
     <PackageReference Include="LLamaSharp" />
     <PackageReference Include="LLamaSharp.Backend.Cpu" />
+    <PackageReference Include="LLamaSharp.Backend.Cuda12" Condition="'$(UseCuda)' == 'true'" />
     <PackageReference Include="Serilog.AspNetCore" />
     <PackageReference Include="Serilog.Formatting.Compact" />
     <PackageReference Include="Serilog.Sinks.File" />

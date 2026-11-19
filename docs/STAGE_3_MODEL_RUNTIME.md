@@ -50,7 +50,7 @@ yet decide which model to use; it will consume this runtime in Stage 4.
 | 3.3 | Runtime contract and fake runtime | Completed |
 | 3.4 | ModelHost process and IPC contract | Completed |
 | 3.5 | LLamaSharp adapter and CPU backend | Completed on Linux CPU; Windows CPU validation pending |
-| 3.6 | Optional CUDA 12 backend on target hardware | Pending owner hardware |
+| 3.6 | Optional CUDA 12 backend on target hardware | Pending owner hardware; runbook ready |
 | 3.7 | Resource admission and supervision | Completed |
 | 3.8 | Stage report and CI verification | Planned |
 
@@ -60,6 +60,10 @@ yet decide which model to use; it will consume this runtime in Stage 4.
   GPU**. GPU-specific validation must run on the owner's Windows machine.
 - Target hardware: Windows, GTX 1650 4 GB (Turing, compute capability 7.5), 16 GB RAM.
 - LLamaSharp 0.30.0 targets `net10.0`; CPU and CUDA12 backends are MIT.
+- Windows CPU and CUDA checks are described in
+  [STAGE_3_HARDWARE_VALIDATION.md](STAGE_3_HARDWARE_VALIDATION.md). CUDA is opt-in with
+  `-p:UseCuda=true` and is not part of the default build, lock file or CI. The opt-in restore
+  and build were verified here; GPU execution was not, because this machine has no GPU.
 
 ## Acceptance criteria
 
@@ -137,11 +141,11 @@ ModelHost IPC phase, 2026-11-19:
 
 ```
 dotnet build AstraAgent.slnx -c Release  → 0 warnings, 0 errors
-dotnet test AstraAgent.slnx -c Release   → 76 passed, 0 failed, 0 skipped
+dotnet test AstraAgent.slnx -c Release   → 85 passed, 0 failed, 0 skipped
 dotnet format --verify-no-changes        → exit 0
 ```
 
-- 17 ModelHost tests: endpoint parsing, handshake (protocol, runtime name, process id),
+- 26 ModelHost tests: endpoint parsing, handshake (protocol, runtime name, process id),
   load/generate/unload, second-load rejection, generation without a loaded model,
   embeddings, stream cancellation, invalid model path, graceful shutdown, missing
   executable, duplicate instance, lifecycle.

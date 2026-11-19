@@ -103,7 +103,13 @@
   - Verified by killing the child process: the next generation restarts, reloads and streams.
   - `--max-model-bytes` rejects oversized model files before native loading; context, token,
     prompt, embedding-batch and GPU-layer limits are enforced by shared validation.
-- 84 tests total (23 core, 34 infrastructure, 2 host, 25 ModelHost).
+- Hardware validation:
+  - `RealModelHardwareTests` (trait `Hardware`) runs only when `ASTRA_TEST_MODEL` is set and
+    is a no-op in CI; validated here on Linux CPU with Qwen3-4B-Q4_K_M.
+  - CUDA 12 is an opt-in build (`-p:UseCuda=true`) and is not in the default build or lock
+    file. Windows CPU and GTX 1650 checks are documented in
+    [STAGE_3_HARDWARE_VALIDATION.md](STAGE_3_HARDWARE_VALIDATION.md).
+- 85 tests total (23 core, 34 infrastructure, 2 host, 26 ModelHost).
 - Verified locally: fresh database applies migrations 1–2, exposes `models`, and `/health`
   is healthy.
 - CI green on Ubuntu and Windows for the registry commit: run
@@ -125,7 +131,7 @@ Local environment, 2026-11-18, Ubuntu 26.04, SDK 10.0.115:
 ```
 dotnet restore AstraAgent.slnx --locked-mode                  → succeeded
 dotnet build AstraAgent.slnx --no-restore -c Release          → 0 warnings, 0 errors
-dotnet test AstraAgent.slnx --no-build -c Release             → 84 passed, 0 failed, 0 skipped
+dotnet test AstraAgent.slnx --no-build -c Release             → 85 passed, 0 failed, 0 skipped
 dotnet format AstraAgent.slnx --verify-no-changes             → exit 0
 ```
 
@@ -158,8 +164,9 @@ GitHub Actions run 44345679716 — **success** (Stage 1 commit):
 ## Current work
 
 Stage 3 — Model Runtime, phase 3.6: validate CPU inference on Windows and CUDA offload on the
-GTX 1650. These require the owner's machine. Phase 3.8 will then collect evidence and the
-stage report. ModelHost is not yet started by `Astra.Host`; it will be wired in Stage 4.
+GTX 1650 using [STAGE_3_HARDWARE_VALIDATION.md](STAGE_3_HARDWARE_VALIDATION.md). These require
+the owner's machine. Phase 3.8 will then collect evidence and the stage report. ModelHost is
+not yet started by `Astra.Host`; it will be wired in Stage 4.
 
 Real-model and GPU validation must run on the target Windows machine with the GTX 1650.
 Policy Engine remains Stage 4.
