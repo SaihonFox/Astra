@@ -26,4 +26,4 @@ approval for changes that affect the product specification.
 | [0005](0005-ipc-and-process-boundaries.md) | IPC and process boundaries | Accepted |
 | [0006](0006-persistence-sqlite.md) | Persistence baseline — SQLite, migrations, settings | Accepted |
 | [0007](0007-in-process-eventing.md) | In-process eventing | Accepted |
-| [0008](0008-model-runtime-strategy.md) | Local model runtime strategy | Proposed |
+| [0008](0008-model-runtime-strategy.md) | Local model runtime strategy | Accepted |

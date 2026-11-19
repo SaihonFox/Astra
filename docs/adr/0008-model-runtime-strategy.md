@@ -1,7 +1,8 @@
 # ADR-0008: Local model runtime strategy
 
-- Status: Proposed
+- Status: Accepted
 - Date: 2026-11-18
+- Accepted: 2026-11-18
 - Decision owners: Project owner
 
 ## Context
