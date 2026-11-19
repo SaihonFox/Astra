@@ -16,7 +16,11 @@ CI never downloads models and never requires a GPU.
 - The repository at the commit under validation.
 - A GGUF model file with a known license and source. A 4B Q4_K_M model (2–3 GB) is a good
   fit for 16 GB RAM; a smaller model also validates the pipeline.
-- For CUDA: an NVIDIA driver that supports CUDA 12 and a GTX 1650 with at least 4 GB VRAM.
+- For CUDA: an NVIDIA driver and the **CUDA 12 toolkit** on the machine. The NuGet backend
+  ships only the llama.cpp libraries; `cudart64_12.dll` and `cublas64_12.dll` come from the
+  toolkit, and LLamaSharp reads `CUDA_PATH` to decide which CUDA version to load. A driver
+  without the toolkit is not enough.
+- A GTX 1650 with at least 4 GB VRAM.
 - About 3 GB of free disk space for build output (the CPU backend carries all platform
   assets) plus the model file.
 
@@ -32,10 +36,11 @@ dotnet test tests/Astra.ModelHost.Tests -c Release `
   --filter "Category=Hardware" --logger "console;verbosity=detailed"
 ```
 
-Expected output includes a passing `RealModelLoadsGeneratesAndEmbeds` test and three timing
-lines:
+Expected output includes a passing `RealModelLoadsGeneratesAndEmbeds` test, the runtime
+capability line and three timing lines:
 
 ```
+[.. INF] GPU offload supported: False; requested GPU layers: 0.
 load: <n> s, gpu layers: 0
 generate: <n> chunks, <n> characters, <n> s
 embed: <n> dimensions, <n> s
@@ -69,13 +74,19 @@ nvidia-smi
 
 Acceptance evidence:
 
-1. The test passes with a non-zero `gpu layers` value.
-2. `nvidia-smi` shows the ModelHost process with allocated GPU memory during load/inference.
-3. Record the working `ASTRA_TEST_GPU_LAYERS` value, VRAM used and timings.
+1. The runtime log reports `GPU offload supported: True; requested GPU layers: 99.` before
+   the model loads. `False` means LLamaSharp did not select the CUDA backend.
+2. The test passes with a non-zero `gpu layers` value.
+3. `nvidia-smi` shows the ModelHost process with allocated GPU memory during load/inference.
+4. Record the working `ASTRA_TEST_GPU_LAYERS` value, VRAM used and timings.
+
+If the runtime logs `GPU layers were requested but the native backend has no usable GPU`,
+the CUDA libraries were not loaded or no device was visible; treat it as a failed GPU check
+and see the fallback note below.
 
 If 99 layers exceed 4 GB VRAM, lower the value (for example 20–30) until load succeeds and
-record that setting. If CUDA cannot be loaded (driver or package mismatch), record the error,
-run the CPU procedure again and document CUDA as unavailable with the CPU fallback. That also
+record that setting. If CUDA cannot be loaded (driver, toolkit or package mismatch), record the error, run the
+CPU procedure again and document CUDA as unavailable with the CPU fallback. That also
 satisfies acceptance criterion 6.
 
 First-time restore downloads about 500 MB of CUDA runtime packages, and the build output

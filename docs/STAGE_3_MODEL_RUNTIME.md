@@ -112,6 +112,9 @@ LLamaSharp adapter, 2026-11-19:
   thread-safe; unload waits for an active stream instead of disposing it underneath.
 - The runtime is selected with `--runtime llama` (default) or `--runtime echo` (tests and
   diagnostics). No model files are required by CI.
+- Each load logs whether the native backend supports GPU offload and how many GPU layers
+  were requested. With the CPU build the value is `False`; a requested GPU layer count
+  without a usable GPU logs a warning and falls back to the CPU.
 - Native llama.cpp messages are routed through Serilog at warning/error level; per-tensor
   information output is dropped.
 

@@ -2,7 +2,9 @@ using System.Runtime.CompilerServices;
 using Astra.Core.Inference;
 using LLama;
 using LLama.Common;
+using LLama.Native;
 using LLama.Sampling;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Astra.ModelHost.Services;
@@ -16,10 +18,11 @@ namespace Astra.ModelHost.Services;
 /// Native failures surface as managed exceptions only where LLamaSharp converts them; hard
 /// native crashes are contained by the process boundary.
 /// </remarks>
-internal sealed class LlamaSharpModelRuntime : ILocalModelRuntime
+internal sealed partial class LlamaSharpModelRuntime : ILocalModelRuntime
 {
 	private readonly SemaphoreSlim _operationLock = new(1, 1);
 	private readonly ModelHostRuntimeLimits _limits;
+	private readonly ILogger _logger;
 	private LLamaWeights? _weights;
 	private LLamaContext? _context;
 	private LLamaEmbedder? _embedder;
@@ -30,9 +33,11 @@ internal sealed class LlamaSharpModelRuntime : ILocalModelRuntime
 
 	/// <summary>Initializes a new instance of the <see cref="LlamaSharpModelRuntime"/> class.</summary>
 	/// <param name="limits">Resource limits enforced before loading.</param>
-	public LlamaSharpModelRuntime(ModelHostRuntimeLimits limits)
+	/// <param name="logger">Logger for runtime diagnostics.</param>
+	public LlamaSharpModelRuntime(ModelHostRuntimeLimits limits, ILogger<LlamaSharpModelRuntime> logger)
 	{
 		_limits = limits;
+		_logger = logger;
 	}
 
 	/// <inheritdoc />
@@ -77,12 +82,15 @@ internal sealed class LlamaSharpModelRuntime : ILocalModelRuntime
 					$"Model '{_loadedModelId}' is already loaded. Unload it first.");
 			}
 
+			var gpuLayerCount = options.GpuLayerCount ?? 0;
+			LogGpuCapability(gpuLayerCount);
+
 			var parameters = new ModelParams(options.ModelPath)
 			{
 				ContextSize = options.ContextWindow is { } contextWindow
 					? checked((uint)contextWindow)
 					: null,
-				GpuLayerCount = options.GpuLayerCount ?? 0,
+				GpuLayerCount = gpuLayerCount,
 			};
 
 			LLamaWeights? weights = null;
@@ -117,7 +125,7 @@ internal sealed class LlamaSharpModelRuntime : ILocalModelRuntime
 			_weights = weights;
 			_context = context;
 			_modelPath = options.ModelPath;
-			_gpuLayerCount = options.GpuLayerCount ?? 0;
+			_gpuLayerCount = gpuLayerCount;
 			Volatile.Write(ref _loadedModelId, modelId);
 		}
 		finally
@@ -275,6 +283,32 @@ internal sealed class LlamaSharpModelRuntime : ILocalModelRuntime
 		}
 	}
 
+	private void LogGpuCapability(int requestedGpuLayers)
+	{
+		bool supported;
+
+		try
+		{
+			supported = NativeApi.llama_supports_gpu_offload();
+		}
+		catch (Exception exception) when (
+			exception is TypeInitializationException
+				or DllNotFoundException
+				or BadImageFormatException
+				or EntryPointNotFoundException)
+		{
+			// The subsequent load reports the native failure with its own context.
+			supported = false;
+		}
+
+		LogGpuSupport(_logger, supported, requestedGpuLayers);
+
+		if (requestedGpuLayers > 0 && !supported)
+		{
+			LogGpuFallback(_logger);
+		}
+	}
+
 	private void ReleaseModel()
 	{
 		_embedder?.Dispose();
@@ -289,4 +323,17 @@ internal sealed class LlamaSharpModelRuntime : ILocalModelRuntime
 		_modelPath = null;
 		Volatile.Write(ref _loadedModelId, null);
 	}
+
+	[LoggerMessage(
+		EventId = 10,
+		Level = LogLevel.Information,
+		Message = "GPU offload supported: {Supported}; requested GPU layers: {GpuLayers}.")]
+	private static partial void LogGpuSupport(ILogger logger, bool supported, int gpuLayers);
+
+	[LoggerMessage(
+		EventId = 11,
+		Level = LogLevel.Warning,
+		Message = "GPU layers were requested but the native backend has no usable GPU; " +
+			"inference will use the CPU.")]
+	private static partial void LogGpuFallback(ILogger logger);
 }

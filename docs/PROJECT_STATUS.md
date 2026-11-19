@@ -107,8 +107,12 @@
   - `RealModelHardwareTests` (trait `Hardware`) runs only when `ASTRA_TEST_MODEL` is set and
     is a no-op in CI; validated here on Linux CPU with Qwen3-4B-Q4_K_M.
   - CUDA 12 is an opt-in build (`-p:UseCuda=true`) and is not in the default build or lock
-    file. Windows CPU and GTX 1650 checks are documented in
+    file. It ships only the llama.cpp libraries, so the CUDA 12 toolkit must be installed
+    for `cudart64_12.dll`/`cublas64_12.dll` and `CUDA_PATH` detection. Windows CPU and
+    GTX 1650 checks are documented in
     [STAGE_3_HARDWARE_VALIDATION.md](STAGE_3_HARDWARE_VALIDATION.md).
+  - Model load logs `GPU offload supported` and the requested GPU layer count, so hardware
+    runs show whether CUDA was actually selected.
 - 85 tests total (23 core, 34 infrastructure, 2 host, 26 ModelHost).
 - Verified locally: fresh database applies migrations 1–2, exposes `models`, and `/health`
   is healthy.

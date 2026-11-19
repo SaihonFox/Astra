@@ -36,7 +36,37 @@ jobs:
         run: dotnet format AstraAgent.slnx --verify-no-changes --no-restore
 
       - name: Test
+        id: test
         run: dotnet test AstraAgent.slnx --no-build --configuration Release --logger "trx;LogFileName=test-results.trx"
+
+      - name: Report failed tests
+        if: steps.test.outcome == 'failure'
+        shell: pwsh
+        run: |
+          $files = Get-ChildItem -Recurse -Filter *.trx
+          if (-not $files) {
+            Write-Host "No TRX files found."
+            exit 0
+          }
+
+          $ns = @{ t = 'http://microsoft.com/schemas/VisualStudio/TeamTest/2010' }
+          $failed = foreach ($file in $files) {
+            [xml]$doc = Get-Content $file.FullName
+            Select-Xml -Xml $doc -XPath '//t:UnitTestResult[@outcome="Failed"]' -Namespace $ns |
+              ForEach-Object { $_.Node }
+          }
+
+          if (-not $failed) {
+            Write-Host "No failed tests in the TRX file."
+            exit 0
+          }
+
+          foreach ($result in $failed) {
+            $message = $result.Output.ErrorInfo.Message
+            $escaped = $message -replace '%', '%25' -replace "`r", '%0D' -replace "`n", '%0A'
+            Write-Host "::error title=Failed test::$($result.testName)%0A$escaped"
+            Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value "- FAILED: ``$($result.testName)``"
+          }
 
       - name: Upload test results
         if: always()
