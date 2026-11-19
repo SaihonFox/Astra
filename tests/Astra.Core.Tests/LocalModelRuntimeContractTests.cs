@@ -10,7 +10,12 @@ public sealed class LocalModelRuntimeContractTests
 	public async Task LoadUnloadAndDisposeTrackState()
 	{
 		var runtime = new FakeLocalModelRuntime();
-		var options = new ModelLoadOptions { ContextWindow = 4096, GpuLayerCount = 10 };
+		var options = new ModelLoadOptions
+		{
+			ModelPath = NewOptions().ModelPath,
+			ContextWindow = 4096,
+			GpuLayerCount = 10,
+		};
 
 		Assert.Null(runtime.LoadedModelId);
 
@@ -22,7 +27,7 @@ public sealed class LocalModelRuntimeContractTests
 		Assert.Null(runtime.LoadedModelId);
 		Assert.Null(runtime.LastLoadOptions);
 
-		await runtime.LoadAsync(ModelId);
+		await runtime.LoadAsync(ModelId, NewOptions());
 		Assert.Equal(2, runtime.LoadCount);
 
 		await runtime.DisposeAsync();
@@ -33,14 +38,14 @@ public sealed class LocalModelRuntimeContractTests
 	public async Task LoadingSecondModelIsRejectedUntilUnload()
 	{
 		await using var runtime = new FakeLocalModelRuntime();
-		await runtime.LoadAsync(ModelId);
+		await runtime.LoadAsync(ModelId, NewOptions());
 
 		var exception = await Assert.ThrowsAsync<InvalidOperationException>(
-			() => runtime.LoadAsync("other-model"));
+			() => runtime.LoadAsync("other-model", NewOptions()));
 		Assert.Contains("already loaded", exception.Message, StringComparison.OrdinalIgnoreCase);
 
 		await runtime.UnloadAsync();
-		await runtime.LoadAsync("other-model");
+		await runtime.LoadAsync("other-model", NewOptions());
 		Assert.Equal("other-model", runtime.LoadedModelId);
 	}
 
@@ -57,7 +62,7 @@ public sealed class LocalModelRuntimeContractTests
 	public async Task GenerationIsDeterministicAndChunked()
 	{
 		await using var runtime = new FakeLocalModelRuntime();
-		await runtime.LoadAsync(ModelId);
+		await runtime.LoadAsync(ModelId, NewOptions());
 
 		var chunks = await CollectAsync(
 			runtime.GenerateAsync(new GenerationRequest { Prompt = "hello" }));
@@ -71,7 +76,7 @@ public sealed class LocalModelRuntimeContractTests
 	public async Task MaxTokensLimitsGeneratedChunks()
 	{
 		await using var runtime = new FakeLocalModelRuntime();
-		await runtime.LoadAsync(ModelId);
+		await runtime.LoadAsync(ModelId, NewOptions());
 
 		var chunks = await CollectAsync(
 			runtime.GenerateAsync(new GenerationRequest { Prompt = "hello", MaxTokens = 3 }));
@@ -83,7 +88,7 @@ public sealed class LocalModelRuntimeContractTests
 	public async Task CancellationStopsStreaming()
 	{
 		await using var runtime = new FakeLocalModelRuntime();
-		await runtime.LoadAsync(ModelId);
+		await runtime.LoadAsync(ModelId, NewOptions());
 
 		using var cancellation = new CancellationTokenSource();
 		var chunks = new List<GenerationChunk>();
@@ -106,7 +111,7 @@ public sealed class LocalModelRuntimeContractTests
 	public async Task EmbeddingsAreDeterministicAndAlignedWithInputs()
 	{
 		await using var runtime = new FakeLocalModelRuntime();
-		await runtime.LoadAsync(ModelId);
+		await runtime.LoadAsync(ModelId, NewOptions());
 
 		var result = await runtime.EmbedAsync(
 			new EmbeddingRequest { Inputs = ["alpha", "beta", "alpha"] });
@@ -134,7 +139,7 @@ public sealed class LocalModelRuntimeContractTests
 	{
 		await using var runtime = new FakeLocalModelRuntime();
 
-		await Assert.ThrowsAsync<ArgumentException>(() => runtime.LoadAsync(modelId));
+		await Assert.ThrowsAsync<ArgumentException>(() => runtime.LoadAsync(modelId, NewOptions()));
 	}
 
 	[Theory]
@@ -145,7 +150,9 @@ public sealed class LocalModelRuntimeContractTests
 		await using var runtime = new FakeLocalModelRuntime();
 
 		await Assert.ThrowsAnyAsync<ArgumentException>(
-			() => runtime.LoadAsync(ModelId, new ModelLoadOptions { ContextWindow = contextWindow }));
+			() => runtime.LoadAsync(
+				ModelId,
+				new ModelLoadOptions { ModelPath = NewOptions().ModelPath, ContextWindow = contextWindow }));
 	}
 
 	[Theory]
@@ -157,7 +164,7 @@ public sealed class LocalModelRuntimeContractTests
 	public async Task GenerationRejectsInvalidRequests(string prompt, int maxTokens, float temperature)
 	{
 		await using var runtime = new FakeLocalModelRuntime();
-		await runtime.LoadAsync(ModelId);
+		await runtime.LoadAsync(ModelId, NewOptions());
 
 		await Assert.ThrowsAnyAsync<ArgumentException>(
 			() => CollectTextAsync(runtime.GenerateAsync(new GenerationRequest
@@ -172,13 +179,22 @@ public sealed class LocalModelRuntimeContractTests
 	public async Task EmbeddingRejectsEmptyInputs()
 	{
 		await using var runtime = new FakeLocalModelRuntime();
-		await runtime.LoadAsync(ModelId);
+		await runtime.LoadAsync(ModelId, NewOptions());
 
 		await Assert.ThrowsAsync<ArgumentException>(
 			() => runtime.EmbedAsync(new EmbeddingRequest { Inputs = [] }));
 		await Assert.ThrowsAsync<ArgumentException>(
 			() => runtime.EmbedAsync(new EmbeddingRequest { Inputs = ["alpha", ""] }));
 	}
+
+	private static ModelLoadOptions NewOptions() => new()
+	{
+		ModelPath = Path.Combine(
+			Path.GetTempPath(),
+			"astra-tests",
+			"models",
+			$"{Guid.NewGuid():N}.gguf"),
+	};
 
 	private static async Task<List<GenerationChunk>> CollectAsync(
 		IAsyncEnumerable<GenerationChunk> stream)

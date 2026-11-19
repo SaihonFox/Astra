@@ -17,14 +17,14 @@ public interface ILocalModelRuntime : IAsyncDisposable
 	/// Loads a model. Loading while another model is loaded is rejected; unload it first.
 	/// </summary>
 	/// <param name="modelId">Registered model identifier.</param>
-	/// <param name="options">Optional load overrides.</param>
+	/// <param name="options">Load parameters, including the resolved absolute model path.</param>
 	/// <param name="cancellationToken">Cancellation token.</param>
 	/// <exception cref="ArgumentException"><paramref name="modelId"/> or <paramref name="options"/> is invalid.</exception>
 	/// <exception cref="InvalidOperationException">Another model is already loaded.</exception>
 	/// <exception cref="OperationCanceledException">The operation was cancelled.</exception>
 	Task LoadAsync(
 		string modelId,
-		ModelLoadOptions? options = null,
+		ModelLoadOptions options,
 		CancellationToken cancellationToken = default);
 
 	/// <summary>Unloads the current model. Does nothing when no model is loaded.</summary>

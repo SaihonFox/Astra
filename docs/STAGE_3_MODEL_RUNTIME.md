@@ -22,7 +22,9 @@ yet decide which model to use; it will consume this runtime in Stage 4.
      availability, preferred tasks, version;
    - CRUD contract and SQLite implementation.
 3. Runtime contract `ILocalModelRuntime` and a deterministic fake implementation for tests.
-4. `Astra.ModelHost` process skeleton with versioned IPC (gRPC over pipes/UDS).
+4. `Astra.ModelHost` process with versioned gRPC IPC over Named Pipes on Windows and Unix
+   Domain Sockets on Linux; only one local transport per process. See
+   [MODEL_HOST_IPC.md](MODEL_HOST_IPC.md).
 5. LLamaSharp adapter confined to ModelHost:
    - load/unload;
    - text generation with streaming and cancellation;
@@ -43,10 +45,10 @@ yet decide which model to use; it will consume this runtime in Stage 4.
 
 | Phase | Deliverable | Status |
 |---|---|---|
-| 3.1 | ADR 0008 and environment probe | ADR Proposed; probe done (no GPU here) |
+| 3.1 | ADR 0008 and environment probe | ADR accepted 2026-11-18; probe done (no GPU here) |
 | 3.2 | Model registry (schema, store, tests) | Completed |
 | 3.3 | Runtime contract and fake runtime | Completed |
-| 3.4 | ModelHost process and IPC contract | Planned |
+| 3.4 | ModelHost process and IPC contract | Completed |
 | 3.5 | LLamaSharp adapter and CPU backend | Planned |
 | 3.6 | Optional CUDA 12 backend on target hardware | Planned |
 | 3.7 | Resource admission and diagnostics | Planned |
@@ -92,4 +94,22 @@ fresh database                          → migrations 1–2, models table, /hea
 CI run 44351727206 (commit 964f983)      → success on Ubuntu and Windows
 CI run 44352946810 (commit 051bdaa)      → success on Ubuntu and Windows
 ```
+
+ModelHost IPC phase, 2026-11-19:
+
+```
+dotnet build AstraAgent.slnx -c Release  → 0 warnings, 0 errors
+dotnet test AstraAgent.slnx -c Release   → 76 passed, 0 failed, 0 skipped
+dotnet format --verify-no-changes        → exit 0
+```
+
+- 17 ModelHost tests: endpoint parsing, handshake (protocol, runtime name, process id),
+  load/generate/unload, second-load rejection, generation without a loaded model,
+  embeddings, stream cancellation, invalid model path, graceful shutdown, missing
+  executable, duplicate instance, lifecycle.
+- Transport on this machine: Unix domain socket under the data root's `ipc` directory;
+  socket created as `0755` inside a `0700` directory, so only the owner can connect.
+- The process does not bind TCP; the only listener is the local endpoint.
+- Windows named-pipe behavior is covered by CI on `windows-latest`; local verification
+  here cannot exercise it.
 

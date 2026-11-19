@@ -39,14 +39,14 @@ public static class LocalRuntimeValidation
 		}
 	}
 
-	/// <summary>Validates load overrides.</summary>
+	/// <summary>Validates load parameters.</summary>
+	/// <exception cref="ArgumentNullException"><paramref name="options"/> is <see langword="null"/>.</exception>
+	/// <exception cref="ArgumentException">The model path is invalid.</exception>
 	/// <exception cref="ArgumentOutOfRangeException">An override is outside its allowed range.</exception>
-	public static void ValidateLoadOptions(ModelLoadOptions? options)
+	public static void ValidateLoadOptions(ModelLoadOptions options)
 	{
-		if (options is null)
-		{
-			return;
-		}
+		ArgumentNullException.ThrowIfNull(options);
+		ModelDescriptorValidator.ValidateModelPath(options.ModelPath);
 
 		if (options.ContextWindow is { } contextWindow &&
 			(contextWindow <= 0 || contextWindow > ModelDescriptorValidator.MaxContextWindow))

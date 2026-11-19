@@ -1,0 +1,79 @@
+syntax = "proto3";
+
+package astra.modelhost.v1;
+
+option csharp_namespace = "Astra.ModelHost.Contracts.V1";
+
+// Local model runtime hosted in a separate process over a local-only transport.
+service ModelHost {
+  // Handshake and status. Used for protocol negotiation and readiness checks.
+  rpc GetInfo(GetInfoRequest) returns (GetInfoResponse);
+
+  // Loads one model. Only one model may be loaded at a time.
+  rpc LoadModel(LoadModelRequest) returns (LoadModelResponse);
+
+  // Unloads the current model. No-op when nothing is loaded.
+  rpc UnloadModel(UnloadModelRequest) returns (UnloadModelResponse);
+
+  // Streams generated text from the loaded model.
+  rpc Generate(GenerateRequest) returns (stream GenerateChunk);
+
+  // Creates embeddings with the loaded model.
+  rpc Embed(EmbedRequest) returns (EmbedResponse);
+
+  // Requests a graceful process shutdown.
+  rpc Shutdown(ShutdownRequest) returns (ShutdownResponse);
+}
+
+message GetInfoRequest {}
+
+message GetInfoResponse {
+  string protocol_version = 1;
+  string runtime_name = 2;
+  string loaded_model_id = 3;
+  int32 process_id = 4;
+}
+
+message LoadModelRequest {
+  string model_id = 1;
+  string model_path = 2;
+  optional int32 context_window = 3;
+  optional int32 gpu_layer_count = 4;
+}
+
+message LoadModelResponse {}
+
+message UnloadModelRequest {}
+
+message UnloadModelResponse {}
+
+message GenerateRequest {
+  string model_id = 1;
+  string prompt = 2;
+  string system_prompt = 3;
+  int32 max_tokens = 4;
+  float temperature = 5;
+  optional int32 seed = 6;
+}
+
+message GenerateChunk {
+  string text = 1;
+}
+
+message EmbedRequest {
+  string model_id = 1;
+  repeated string inputs = 2;
+}
+
+message EmbedResponse {
+  int32 dimensions = 1;
+  repeated EmbeddingVector vectors = 2;
+}
+
+message EmbeddingVector {
+  repeated float values = 1;
+}
+
+message ShutdownRequest {}
+
+message ShutdownResponse {}

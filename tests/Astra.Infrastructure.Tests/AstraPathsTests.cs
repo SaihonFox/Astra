@@ -32,6 +32,7 @@ public sealed class AstraPathsTests
 			Assert.True(Directory.Exists(paths.Root));
 			Assert.True(Directory.Exists(paths.DatabaseDirectory));
 			Assert.True(Directory.Exists(paths.LogsDirectory));
+			Assert.True(Directory.Exists(paths.IpcDirectory));
 			Assert.False(Directory.Exists(paths.ModelsDirectory));
 		}
 		finally
@@ -62,6 +63,7 @@ public sealed class AstraPathsTests
 				UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute;
 			Assert.Equal(expected, File.GetUnixFileMode(paths.Root));
 			Assert.Equal(expected, File.GetUnixFileMode(paths.DatabaseDirectory));
+			Assert.Equal(expected, File.GetUnixFileMode(paths.IpcDirectory));
 		}
 		finally
 		{

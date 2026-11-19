@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Grpc.Net.Client" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Astra.Core\Astra.Core.csproj" />
+    <ProjectReference Include="..\Astra.Infrastructure\Astra.Infrastructure.csproj" />
+    <ProjectReference Include="..\Astra.ModelHost.Contracts\Astra.ModelHost.Contracts.csproj" />
+  </ItemGroup>
+
+</Project>

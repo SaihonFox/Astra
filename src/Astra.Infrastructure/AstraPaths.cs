@@ -46,6 +46,9 @@ public sealed class AstraPaths
 	/// <summary>Gets the cache area.</summary>
 	public string CacheDirectory => Path.Combine(Root, "cache");
 
+	/// <summary>Gets the local IPC area for process endpoints.</summary>
+	public string IpcDirectory => Path.Combine(Root, "ipc");
+
 	/// <summary>Gets the backups area.</summary>
 	public string BackupsDirectory => Path.Combine(Root, "backups");
 
@@ -87,6 +90,7 @@ public sealed class AstraPaths
 		CreatePrivateDirectory(Root);
 		CreatePrivateDirectory(DatabaseDirectory);
 		CreatePrivateDirectory(LogsDirectory);
+		CreatePrivateDirectory(IpcDirectory);
 	}
 
 	private static void CreatePrivateDirectory(string path)

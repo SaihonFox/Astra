@@ -5,6 +5,9 @@ namespace Astra.Core.Inference;
 /// </summary>
 public sealed record ModelLoadOptions
 {
+	/// <summary>Gets the absolute path of the GGUF file to load.</summary>
+	public required string ModelPath { get; init; }
+
 	/// <summary>Gets the context window override in tokens.</summary>
 	public int? ContextWindow { get; init; }
 

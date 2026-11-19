@@ -60,5 +60,6 @@ does not make extension code trusted. Docker is not treated as a security bounda
 ## Validation plan
 
 - A later ADR or design note details pipe ACLs, socket permissions and handshake fields.
+  Satisfied for ModelHost by [MODEL_HOST_IPC.md](../MODEL_HOST_IPC.md).
 - Cross-platform IPC tests are required before the first process is added.
 - Threat review covers each new boundary and its failure modes.

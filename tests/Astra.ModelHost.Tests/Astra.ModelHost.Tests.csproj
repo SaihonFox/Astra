@@ -1,0 +1,37 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Xunit" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Astra.Infrastructure\Astra.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\src\Astra.ModelHost.Client\Astra.ModelHost.Client.csproj" />
+    <ProjectReference Include="..\..\src\Astra.ModelHost\Astra.ModelHost.csproj" ReferenceOutputAssembly="false" />
+  </ItemGroup>
+
+  <Target Name="CopyModelHostForTests" AfterTargets="Build">
+    <ItemGroup>
+      <ModelHostOutput Include="$(MSBuildThisFileDirectory)..\..\src\Astra.ModelHost\bin\$(Configuration)\$(TargetFramework)\**\*" />
+    </ItemGroup>
+    <Copy
+      SourceFiles="@(ModelHostOutput)"
+      DestinationFolder="$(OutDir)modelhost\%(RecursiveDir)"
+      SkipUnchangedFiles="true" />
+  </Target>
+
+</Project>

@@ -53,7 +53,7 @@ public static class ModelDescriptorValidator
 
 		ValidateId(descriptor.Id);
 		ValidateText(descriptor.Name, MaxNameLength, nameof(descriptor.Name), required: true);
-		ValidatePath(descriptor.Path);
+		ValidateModelPath(descriptor.Path);
 		ValidateEnum(descriptor.Format, nameof(descriptor.Format));
 		ValidateText(
 			descriptor.Quantization,
@@ -126,7 +126,12 @@ public static class ModelDescriptorValidator
 		}
 	}
 
-	private static void ValidatePath(string path)
+	/// <summary>
+	/// Validates an absolute GGUF model path.
+	/// </summary>
+	/// <param name="path">Path to validate.</param>
+	/// <exception cref="ArgumentException">The path is empty, relative, too long or not a GGUF file.</exception>
+	public static void ValidateModelPath(string path)
 	{
 		ValidateText(path, MaxPathLength, nameof(path), required: true);
 

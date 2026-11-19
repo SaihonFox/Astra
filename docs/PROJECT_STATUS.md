@@ -2,8 +2,8 @@
 
 **Current stage:** Stage 3 — Model Runtime (in progress)
 **Specification:** approved by project owner on 2026-11-18
-**Implementation:** foundation and core infrastructure complete; model registry implemented; runtime not started
-**Last updated:** 2026-11-18
+**Implementation:** foundation and core infrastructure complete; model registry, runtime contract and ModelHost IPC implemented; real inference pending
+**Last updated:** 2026-11-19
 
 ## Completed
 
@@ -63,8 +63,8 @@
 - [Stage 2 report](STAGE_2_CORE_INFRASTRUCTURE_REPORT.md) signed off.
 
 ### Stage 3 — Model Runtime (in progress)
-- ADR 0008 proposes LLamaSharp as the llama.cpp integration inside a dedicated
-  `Astra.ModelHost` process, CPU baseline and optional CUDA 12 — **Proposed**.
+- ADR 0008 accepted by the owner on 2026-11-18: LLamaSharp as the llama.cpp integration
+  inside a dedicated `Astra.ModelHost` process, CPU baseline and optional CUDA 12.
 - Model registry contracts in `Astra.Core`: `ModelDescriptor`, `ModelFormat`,
   `ModelCapabilities`, `ModelTestStatus`, `ModelAvailability`, validator and
   `IModelRegistry`.
@@ -77,7 +77,19 @@
 - Deterministic fake runtime and contract tests: load/unload/dispose, single active model,
   streamed generation, max-token limit, cancellation, deterministic embeddings and input
   validation.
-- 59 tests total (23 core, 34 infrastructure, 2 host).
+- ModelHost IPC (phase 3.4):
+  - `Astra.ModelHost.Contracts`: proto3 contract `astra.modelhost.v1`, protocol version
+    handshake, validated local endpoint types (`pipe:` / `unix:`).
+  - `Astra.ModelHost`: Kestrel HTTP/2 listener on a named pipe (Windows) or Unix domain
+    socket (Linux), gRPC service over `ILocalModelRuntime`, bounded message size, graceful
+    shutdown. It currently runs a deterministic echo runtime instead of llama.cpp.
+  - `Astra.ModelHost.Client`: `ModelHostClient` implementing `ILocalModelRuntime` with
+    version and process-id checks plus error translation; `ModelHostProcess` for start,
+    handshake wait, stale-socket cleanup and bounded stop/kill.
+  - Security: pipe created with `PipeOptions.CurrentUserOnly`; socket inside a `0700`
+    `ipc` directory; no TCP listener. Details in [MODEL_HOST_IPC.md](MODEL_HOST_IPC.md).
+  - 17 IPC and lifecycle tests against a real child process.
+- 76 tests total (23 core, 34 infrastructure, 2 host, 17 ModelHost).
 - Verified locally: fresh database applies migrations 1–2, exposes `models`, and `/health`
   is healthy.
 - CI green on Ubuntu and Windows for the registry commit: run
@@ -93,7 +105,7 @@ Local environment, 2026-11-18, Ubuntu 26.04, SDK 10.0.115:
 ```
 dotnet restore AstraAgent.slnx --locked-mode                  → succeeded
 dotnet build AstraAgent.slnx --no-restore -c Release          → 0 warnings, 0 errors
-dotnet test AstraAgent.slnx --no-build -c Release             → 59 passed, 0 failed, 0 skipped
+dotnet test AstraAgent.slnx --no-build -c Release             → 76 passed, 0 failed, 0 skipped
 dotnet format AstraAgent.slnx --verify-no-changes             → exit 0
 ```
 
@@ -107,6 +119,15 @@ database/astra.db                                             → journal_mode=w
 logs/astra-<date>.jsonl                                       → compact JSON log lines
 ```
 
+ModelHost check with a temporary data root:
+
+```
+Astra.ModelHost --endpoint unix:<temp>/modelhost.sock --data-root <temp>
+listener                                                     → local Unix socket only, no TCP
+ipc directory / socket mode                                  → 0700 / 0755 (owner-only connect)
+handshake and RPCs                                           → covered by 17 process tests
+```
+
 A clean copy without `bin/obj` was restored with `--locked-mode` and passed build and tests.
 
 GitHub Actions run 44345679716 — **success** (Stage 1 commit):
@@ -116,15 +137,19 @@ GitHub Actions run 44345679716 — **success** (Stage 1 commit):
 
 ## Current work
 
-Stage 3 — Model Runtime. Next: runtime contract (`ILocalModelRuntime`) and deterministic fake
-runtime, then the ModelHost process and IPC contract. ADR 0008 awaits owner acceptance.
+Stage 3 — Model Runtime, phase 3.5: replace the echo runtime inside ModelHost with the
+LLamaSharp CPU adapter and load a real GGUF model. Resource admission, CUDA validation on the
+target GTX 1650 and the stage report follow. ModelHost is not yet started by `Astra.Host`;
+wiring belongs to the adapter/admission phases so the host only launches a process that can
+actually serve inference.
+
 Real-model and GPU validation must run on the target Windows machine with the GTX 1650.
 Policy Engine remains Stage 4.
 
 ## Not yet implemented
 
-All product subsystems: Agent Core, model runtime, memory, tools, policy engine, API
-surface, desktop UI, Android client, extensions and learning.
+Agent Core, real llama.cpp inference inside ModelHost, resource admission, memory, tools,
+policy engine, API surface, desktop UI, Android client, extensions and learning.
 
 ## Risks / decisions to validate during implementation
 - Exact .NET 10 SDK and Avalonia compatibility at implementation time.

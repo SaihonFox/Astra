@@ -18,7 +18,7 @@ internal sealed class FakeLocalModelRuntime : ILocalModelRuntime
 
 	public Task LoadAsync(
 		string modelId,
-		ModelLoadOptions? options = null,
+		ModelLoadOptions options,
 		CancellationToken cancellationToken = default)
 	{
 		cancellationToken.ThrowIfCancellationRequested();
