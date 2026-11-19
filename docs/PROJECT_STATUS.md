@@ -88,8 +88,16 @@
     handshake wait, stale-socket cleanup and bounded stop/kill.
   - Security: pipe created with `PipeOptions.CurrentUserOnly`; socket inside a `0700`
     `ipc` directory; no TCP listener. Details in [MODEL_HOST_IPC.md](MODEL_HOST_IPC.md).
-  - 17 IPC and lifecycle tests against a real child process.
-- 76 tests total (23 core, 34 infrastructure, 2 host, 17 ModelHost).
+  - 19 IPC, runtime-selection and lifecycle tests against real child processes.
+- LLamaSharp adapter (phase 3.5) confined to ModelHost:
+  - LLamaSharp 0.30.0 with the CPU backend; only the build host's native runtime is copied.
+  - model load/unload, streaming generation with temperature/seed/token limits and
+    embeddings; operations are serialized because llama.cpp contexts are not thread-safe.
+  - missing and corrupt GGUF files fail as managed errors while the process stays alive.
+  - real inference validated on Linux CPU with Qwen3-4B-Q4_K_M (2.4 GB, context 512):
+    load 7.5 s, 16 tokens in 3.9 s, 2560-dimension embeddings in 0.6 s.
+  - `--runtime llama` is the default; `--runtime echo` remains for tests and diagnostics.
+- 78 tests total (23 core, 34 infrastructure, 2 host, 19 ModelHost).
 - Verified locally: fresh database applies migrations 1–2, exposes `models`, and `/health`
   is healthy.
 - CI green on Ubuntu and Windows for the registry commit: run
@@ -99,7 +107,8 @@
 - CI green on Ubuntu and Windows for the ModelHost IPC commit: run
   [44460539305](https://github.com/SaihonFox/Astra/actions/runs/44460539305).
   Ubuntu exercised Unix sockets, Windows exercised named pipes.
-- Not yet verified: real model loading and generation, GPU backend.
+- Not yet verified: CPU inference on Windows, CUDA offload on the GTX 1650, resource
+  admission and Host-side supervision.
 
 ## Verification performed
 
@@ -108,7 +117,7 @@ Local environment, 2026-11-18, Ubuntu 26.04, SDK 10.0.115:
 ```
 dotnet restore AstraAgent.slnx --locked-mode                  → succeeded
 dotnet build AstraAgent.slnx --no-restore -c Release          → 0 warnings, 0 errors
-dotnet test AstraAgent.slnx --no-build -c Release             → 76 passed, 0 failed, 0 skipped
+dotnet test AstraAgent.slnx --no-build -c Release             → 78 passed, 0 failed, 0 skipped
 dotnet format AstraAgent.slnx --verify-no-changes             → exit 0
 ```
 
@@ -140,11 +149,9 @@ GitHub Actions run 44345679716 — **success** (Stage 1 commit):
 
 ## Current work
 
-Stage 3 — Model Runtime, phase 3.5: replace the echo runtime inside ModelHost with the
-LLamaSharp CPU adapter and load a real GGUF model. Resource admission, CUDA validation on the
-target GTX 1650 and the stage report follow. ModelHost is not yet started by `Astra.Host`;
-wiring belongs to the adapter/admission phases so the host only launches a process that can
-actually serve inference.
+Stage 3 — Model Runtime, phase 3.6: validate CPU inference on Windows and CUDA offload on the
+GTX 1650, then phase 3.7 resource admission and Host-side supervision, and phase 3.8 report.
+ModelHost is not yet started by `Astra.Host`.
 
 Real-model and GPU validation must run on the target Windows machine with the GTX 1650.
 Policy Engine remains Stage 4.

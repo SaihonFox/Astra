@@ -13,7 +13,8 @@ public sealed class ModelHostLifecycleTests
 		var process = await ModelHostProcess.StartAsync(
 			AstraPaths.Resolve(root),
 			ModelHostAssemblyPath(),
-			"lifecycle");
+			"lifecycle",
+			runtimeName: "echo");
 
 		try
 		{
@@ -42,7 +43,8 @@ public sealed class ModelHostLifecycleTests
 				() => ModelHostProcess.StartAsync(
 					AstraPaths.Resolve(root),
 					missing,
-					"missing"));
+					"missing",
+					runtimeName: "echo"));
 
 			Assert.Contains("was not found", exception.Message, StringComparison.OrdinalIgnoreCase);
 			Assert.False(File.Exists(missing));
@@ -62,7 +64,8 @@ public sealed class ModelHostLifecycleTests
 		var process = await ModelHostProcess.StartAsync(
 			paths,
 			ModelHostAssemblyPath(),
-			"duplicate");
+			"duplicate",
+			runtimeName: "echo");
 
 		try
 		{
@@ -70,7 +73,8 @@ public sealed class ModelHostLifecycleTests
 				() => ModelHostProcess.StartAsync(
 					paths,
 					ModelHostAssemblyPath(),
-					"duplicate"));
+					"duplicate",
+					runtimeName: "echo"));
 
 			Assert.Contains("already", exception.Message, StringComparison.OrdinalIgnoreCase);
 			Assert.True(process.IsRunning);

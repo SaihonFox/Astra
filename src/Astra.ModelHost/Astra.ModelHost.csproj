@@ -7,6 +7,8 @@
 
   <ItemGroup>
     <PackageReference Include="Grpc.AspNetCore" />
+    <PackageReference Include="LLamaSharp" />
+    <PackageReference Include="LLamaSharp.Backend.Cpu" />
     <PackageReference Include="Serilog.AspNetCore" />
     <PackageReference Include="Serilog.Formatting.Compact" />
     <PackageReference Include="Serilog.Sinks.File" />

@@ -46,6 +46,10 @@ public sealed class ModelHostProcess : IAsyncDisposable
 	/// <param name="modelHostAssemblyPath">Absolute path to Astra.ModelHost.dll or the app host.</param>
 	/// <param name="instanceName">Logical instance name; isolates endpoints per data root.</param>
 	/// <param name="startupTimeout">Maximum startup time; defaults to 20 seconds.</param>
+	/// <param name="runtimeName">
+	/// Runtime to start: <c>llama</c> (default) or <c>echo</c>. Tests use <c>echo</c> so CI does
+	/// not need model files or native inference.
+	/// </param>
 	/// <param name="cancellationToken">Cancellation token.</param>
 	/// <exception cref="ArgumentException">An argument is invalid.</exception>
 	/// <exception cref="InvalidOperationException">
@@ -57,6 +61,7 @@ public sealed class ModelHostProcess : IAsyncDisposable
 		string modelHostAssemblyPath,
 		string instanceName = "default",
 		TimeSpan? startupTimeout = null,
+		string? runtimeName = null,
 		CancellationToken cancellationToken = default)
 	{
 		ArgumentNullException.ThrowIfNull(paths);
@@ -92,7 +97,7 @@ public sealed class ModelHostProcess : IAsyncDisposable
 			File.Delete(endpoint.Address);
 		}
 
-		var startInfo = BuildStartInfo(modelHostAssemblyPath, endpoint, paths.Root);
+		var startInfo = BuildStartInfo(modelHostAssemblyPath, endpoint, paths.Root, runtimeName);
 		var process = new Process { StartInfo = startInfo };
 
 		try
@@ -239,7 +244,8 @@ public sealed class ModelHostProcess : IAsyncDisposable
 	private static ProcessStartInfo BuildStartInfo(
 		string modelHostAssemblyPath,
 		ModelHostEndpoint endpoint,
-		string dataRoot)
+		string dataRoot,
+		string? runtimeName)
 	{
 		var directory = Path.GetDirectoryName(modelHostAssemblyPath)
 			?? throw new ArgumentException(
@@ -268,6 +274,12 @@ public sealed class ModelHostProcess : IAsyncDisposable
 		startInfo.ArgumentList.Add(endpoint.ToUriString());
 		startInfo.ArgumentList.Add("--data-root");
 		startInfo.ArgumentList.Add(dataRoot);
+
+		if (runtimeName is not null)
+		{
+			startInfo.ArgumentList.Add("--runtime");
+			startInfo.ArgumentList.Add(runtimeName);
+		}
 
 		return startInfo;
 	}

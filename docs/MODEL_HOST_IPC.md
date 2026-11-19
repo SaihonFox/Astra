@@ -88,5 +88,6 @@ names, access control, handshake fields, message limits and supervision behavior
   Peer authentication beyond OS ACLs is not implemented and is not planned for local IPC.
 - Backpressure during streaming is provided by HTTP/2 flow control only; there is no
   application-level rate limit yet.
-- The current process runs the deterministic echo runtime. Real llama.cpp inference, model
-  size admission and GPU configuration arrive with phases 3.5–3.7.
+- The process starts the LLamaSharp runtime by default. The deterministic echo runtime is
+  still selectable with `--runtime echo` and exists for tests and diagnostics only.
+- Model size admission and GPU configuration arrive with phases 3.6–3.7.

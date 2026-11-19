@@ -4,6 +4,7 @@ using Astra.Core.Inference;
 using Astra.Infrastructure;
 using Astra.ModelHost.Contracts;
 using Astra.ModelHost.Services;
+using LLama.Native;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.NamedPipes;
 using Microsoft.Extensions.Logging;
@@ -51,8 +52,23 @@ builder.Host.UseSerilog((context, _, configuration) => configuration
 		fileSizeLimitBytes: 64 * 1024 * 1024,
 		rollOnFileSizeLimit: true));
 
-builder.Services.AddSingleton(new ModelHostRuntimeInfo("echo"));
-builder.Services.AddSingleton<ILocalModelRuntime, EchoModelRuntime>();
+var runtimeName = builder.Configuration["runtime"] ?? "llama";
+
+if (string.Equals(runtimeName, "llama", StringComparison.Ordinal))
+{
+	builder.Services.AddSingleton(new ModelHostRuntimeInfo("llamasharp"));
+	builder.Services.AddSingleton<ILocalModelRuntime, LlamaSharpModelRuntime>();
+}
+else if (string.Equals(runtimeName, "echo", StringComparison.Ordinal))
+{
+	builder.Services.AddSingleton(new ModelHostRuntimeInfo("echo"));
+	builder.Services.AddSingleton<ILocalModelRuntime, EchoModelRuntime>();
+}
+else
+{
+	throw new InvalidOperationException(
+		$"Unknown runtime '{runtimeName}'. Supported values: llama, echo.");
+}
 builder.Services.AddGrpc(options =>
 {
 	const int maxMessageSize = 8 * 1024 * 1024;
@@ -93,7 +109,32 @@ builder.WebHost.ConfigureKestrel(kestrel =>
 
 var app = builder.Build();
 
-Program.LogEchoRuntime(app.Logger);
+if (string.Equals(runtimeName, "llama", StringComparison.Ordinal))
+{
+	// llama.cpp writes to stderr by default; route warnings and errors through Serilog and
+	// drop the very verbose per-tensor information messages.
+	NativeLogConfig.llama_log_set((level, message) =>
+	{
+		switch (level)
+		{
+			case LLamaLogLevel.Error:
+				Program.LogNativeError(app.Logger, message);
+				break;
+			case LLamaLogLevel.Warning:
+				Program.LogNativeWarning(app.Logger, message);
+				break;
+			default:
+				break;
+		}
+	});
+}
+
+Program.LogRuntime(app.Logger, runtimeName);
+
+if (string.Equals(runtimeName, "echo", StringComparison.Ordinal))
+{
+	Program.LogEchoRuntime(app.Logger);
+}
 
 app.MapGrpcService<ModelHostService>();
 
@@ -103,8 +144,26 @@ public partial class Program
 {
 	[LoggerMessage(
 		EventId = 1,
+		Level = LogLevel.Information,
+		Message = "ModelHost started with runtime '{RuntimeName}'.")]
+	public static partial void LogRuntime(Microsoft.Extensions.Logging.ILogger logger, string runtimeName);
+
+	[LoggerMessage(
+		EventId = 2,
 		Level = LogLevel.Warning,
 		Message = "ModelHost is using the echo runtime. It does not load a real model; " +
-			"the LLamaSharp adapter is not implemented yet.")]
+			"this mode exists for tests and diagnostics only.")]
 	public static partial void LogEchoRuntime(Microsoft.Extensions.Logging.ILogger logger);
+
+	[LoggerMessage(
+		EventId = 3,
+		Level = LogLevel.Warning,
+		Message = "llama.cpp: {Message}")]
+	public static partial void LogNativeWarning(Microsoft.Extensions.Logging.ILogger logger, string message);
+
+	[LoggerMessage(
+		EventId = 4,
+		Level = LogLevel.Error,
+		Message = "llama.cpp: {Message}")]
+	public static partial void LogNativeError(Microsoft.Extensions.Logging.ILogger logger, string message);
 }

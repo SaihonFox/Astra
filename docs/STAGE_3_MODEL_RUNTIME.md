@@ -49,7 +49,7 @@ yet decide which model to use; it will consume this runtime in Stage 4.
 | 3.2 | Model registry (schema, store, tests) | Completed |
 | 3.3 | Runtime contract and fake runtime | Completed |
 | 3.4 | ModelHost process and IPC contract | Completed |
-| 3.5 | LLamaSharp adapter and CPU backend | Planned |
+| 3.5 | LLamaSharp adapter and CPU backend | Completed on Linux CPU; Windows CPU validation pending |
 | 3.6 | Optional CUDA 12 backend on target hardware | Planned |
 | 3.7 | Resource admission and diagnostics | Planned |
 | 3.8 | Stage report and CI verification | Planned |
@@ -94,6 +94,34 @@ fresh database                          → migrations 1–2, models table, /hea
 CI run 44351727206 (commit 964f983)      → success on Ubuntu and Windows
 CI run 44352946810 (commit 051bdaa)      → success on Ubuntu and Windows
 ```
+
+LLamaSharp adapter, 2026-11-19:
+
+- `LlamaSharpModelRuntime` inside `Astra.ModelHost`; LLamaSharp types are not referenced by
+  `Astra.Core`, `Astra.Infrastructure`, `Astra.Host` or the IPC contracts.
+- Load uses `LLamaWeights.LoadFromFileAsync` with an optional context override and GPU layer
+  count; a missing file and a corrupt file fail as managed errors and keep the process alive.
+- Generation streams tokens from `InteractiveExecutor` with temperature, optional seed and
+  `MaxTokens`; the system prompt is prepended to the user prompt.
+- Embeddings use `LLamaEmbedder` with embeddings enabled on a separate context.
+- Load, generation, embedding and unload are serialized because llama.cpp contexts are not
+  thread-safe; unload waits for an active stream instead of disposing it underneath.
+- The runtime is selected with `--runtime llama` (default) or `--runtime echo` (tests and
+  diagnostics). No model files are required by CI.
+- Native llama.cpp messages are routed through Serilog at warning/error level; per-tensor
+  information output is dropped.
+
+Real-model validation, 2026-11-19, Linux CPU (4 vCPU, no GPU):
+
+```
+model                     Qwen3-4B-Q4_K_M.gguf (2.4 GB, pre-existing local file)
+load, context 512         → 7.5 s
+generate, 16 tokens       → 3.9 s (" Paris. The capital of Germany is Berlin. ...")
+embeddings, 1 input       → 0.6 s, 2560 dimensions
+unload                    → graceful, process exits
+```
+
+The same model was not loaded in CI; tests use the echo runtime or invalid GGUF files.
 
 ModelHost IPC phase, 2026-11-19:
 
