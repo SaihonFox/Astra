@@ -2,8 +2,9 @@
 
 **Current stage:** Stage 3 — Model Runtime (in progress)
 **Specification:** approved by project owner on 2026-11-18
-**Implementation:** foundation and core infrastructure complete; model registry, runtime contract and ModelHost IPC implemented; real inference pending
+**Implementation:** foundation and core infrastructure complete; model registry, runtime contract, ModelHost IPC, CPU inference and supervision implemented; Windows/CUDA validation and the stage report pending
 **Last updated:** 2026-11-19
+**Handoff:** [prompts/PROJECT_HANDOFF.md](../prompts/PROJECT_HANDOFF.md) — full state, evidence, next steps and pitfalls for a new agent or machine
 
 ## Completed
 
@@ -138,7 +139,7 @@
 
 ## Verification performed
 
-Local environment, 2026-11-18, Ubuntu 26.04, SDK 10.0.115:
+Local environment, 2026-11-19, Ubuntu 26.04, SDK 10.0.115:
 
 ```
 dotnet restore AstraAgent.slnx --locked-mode                  → succeeded
@@ -163,7 +164,7 @@ ModelHost check with a temporary data root:
 Astra.ModelHost --endpoint unix:<temp>/modelhost.sock --data-root <temp>
 listener                                                     → local Unix socket only, no TCP
 ipc directory / socket mode                                  → 0700 / 0755 (owner-only connect)
-handshake and RPCs                                           → covered by 17 process tests
+handshake and RPCs                                           → covered by 26 process tests
 ```
 
 A clean copy without `bin/obj` was restored with `--locked-mode` and passed build and tests.
@@ -181,12 +182,15 @@ the owner's machine. Phase 3.8 will then collect evidence and the stage report. 
 not yet started by `Astra.Host`; it will be wired in Stage 4.
 
 Real-model and GPU validation must run on the target Windows machine with the GTX 1650.
-Policy Engine remains Stage 4.
+Policy Engine remains Stage 4 and requires owner approval. A new agent should start from
+[prompts/PROJECT_HANDOFF.md](../prompts/PROJECT_HANDOFF.md).
 
 ## Not yet implemented
 
-Agent Core, real llama.cpp inference inside ModelHost, resource admission, memory, tools,
-policy engine, API surface, desktop UI, Android client, extensions and learning.
+Agent Core, model orchestration and context assembly, memory, tools, Policy Engine and audit,
+API surface, desktop UI, Android client, extensions and learning. `Astra.Host` does not start
+ModelHost yet; supervision is a tested client library waiting for Stage 4 wiring. Windows CPU
+inference and CUDA offload on the GTX 1650 are not validated yet.
 
 ## Risks / decisions to validate during implementation
 - Exact .NET 10 SDK and Avalonia compatibility at implementation time.

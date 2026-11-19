@@ -49,7 +49,12 @@ Events are versioned and carry stable IDs, task correlation, timestamps, type, p
 - Data root: OS local application-data directory plus `Astra`, overridable via
   `ASTRA_DATA_DIR` or `Astra:DataDirectory`.
 - Model registry: model descriptors and metadata in SQLite, live file availability checks
-  (ADR 0006 schema, migration 2). Runtime for actual inference is not implemented yet.
+  (ADR 0006 schema, migration 2).
+- Model runtime: `Astra.ModelHost` is a separate process hosting LLamaSharp/llama.cpp. It is
+  reached over a local-only gRPC transport — a named pipe on Windows or a Unix domain socket
+  on Linux — and is the only place that references native inference types. The client library
+  (`Astra.ModelHost.Client`) implements `ILocalModelRuntime` and supervises the process; the
+  host does not start it yet (Stage 4). See [MODEL_HOST_IPC.md](MODEL_HOST_IPC.md).
 
 ## Architecture decisions
 

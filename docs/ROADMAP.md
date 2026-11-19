@@ -1,6 +1,6 @@
 # Roadmap
 
-Статус этапов — плановый. Этапы 0 и 1 завершены, спецификация утверждена.
+Статус этапов — плановый. Этапы 0–2 завершены, спецификация утверждена, этап 3 в работе.
 
 | Этап | Название | Статус |
 |---|---|---|
@@ -80,14 +80,14 @@
 заменяемая граница runtime и контролируемый процесс `Astra.ModelHost`.
 
 ### Задачи
-1. ADR 0008 — стратегия runtime (LLamaSharp, ModelHost, CPU baseline, optional CUDA 12). — Proposed
+1. ADR 0008 — стратегия runtime (LLamaSharp, ModelHost, CPU baseline, optional CUDA 12). — Accepted 2026-11-18
 2. Реестр моделей: контракты, миграция, SQLite-store, валидация, DI. — выполнено
-3. Контракт `ILocalModelRuntime` и детерминированный fake runtime для тестов. — не начато
-4. Процесс `Astra.ModelHost` и версионируемый IPC. — не начато
-5. LLamaSharp adapter: load/unload, streaming generation, cancellation, embeddings. — не начато
-6. Resource admission: одна активная модель, лимиты контекста и памяти. — не начато
+3. Контракт `ILocalModelRuntime` и детерминированный fake runtime для тестов. — выполнено
+4. Процесс `Astra.ModelHost` и версионируемый IPC. — выполнено
+5. LLamaSharp adapter: load/unload, streaming generation, cancellation, embeddings. — выполнено; проверено на Linux CPU
+6. Resource admission: одна активная модель, лимиты контекста и памяти. — выполнено (базовые лимиты и надзор)
 7. Проверка на целевом GTX 1650 и документирование результатов. — ожидает оборудования владельца
-8. Отчёт этапа и CI. — не начато
+8. Отчёт этапа и CI. — CI зелёный; отчёт ожидает проверки на оборудовании владельца
 
 ### Критерии завершения
 - Метаданные моделей переживают рестарт, невалидные дескрипторы отклоняются.

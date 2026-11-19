@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/SaihonFox/Astra/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/SaihonFox/Astra/actions/workflows/ci.yml)
 
-**Статус:** Этап 2 — Core Infrastructure завершён; Этап 3 — Model Runtime в работе
+**Статус:** Этапы 0–2 завершены; Этап 3 — Model Runtime в работе (остались проверка на оборудовании владельца и отчёт этапа)
 **Основная платформа:** Windows  
 **Дополнительная платформа:** Linux  
 **Клиент:** Android  
@@ -20,7 +20,7 @@ Astra Agent — персональный автономный локальный
 
 ## Текущее состояние
 
-Каркас Foundation, базовая инфраструктура и реестр моделей: solution `AstraAgent.slnx`, хост `Astra.Host`, SQLite с миграциями, in-process event bus, настройки, реестр моделей, Serilog-логирование, health check и CI для Linux/Windows. Runtime инференса, Agent Core и память ещё не реализованы.
+Каркас Foundation, базовая инфраструктура и рантайм локальных моделей: solution `AstraAgent.slnx`, хост `Astra.Host`, SQLite с миграциями, in-process event bus, настройки, реестр моделей, Serilog-логирование, health check и CI для Linux/Windows. `Astra.ModelHost` запускает llama.cpp через LLamaSharp в отдельном процессе (Named Pipe на Windows, Unix Socket на Linux), поддерживает загрузку GGUF, потоковую генерацию, эмбеддинги, лимиты и перезапуск после падения. Реальная генерация проверена на Linux CPU; проверка на Windows и CUDA ожидает оборудования владельца. Agent Core, память, инструменты и Policy Engine ещё не реализованы.
 
 Проверено на .NET SDK 10.0.115 (Ubuntu 26.04):
 
@@ -28,6 +28,7 @@ Astra Agent — персональный автономный локальный
 dotnet restore AstraAgent.slnx --locked-mode
 dotnet build AstraAgent.slnx --no-restore -c Release
 dotnet test AstraAgent.slnx --no-build -c Release
+dotnet format AstraAgent.slnx --verify-no-changes
 ASTRA_DATA_DIR=/tmp/astra-data dotnet run --project src/Astra.Host
 curl http://127.0.0.1:5298/health
 ```
@@ -41,6 +42,7 @@ MIT — см. [LICENSE](LICENSE). Сторонние зависимости и �
 - [Утверждённая спецификация](docs/FINAL_PRODUCT_SPECIFICATION.md)
 - [Инструкции для coding agents](AGENTS.md)
 - [План разработки](docs/ROADMAP.md)
+- [Передача проекта новому агенту](prompts/PROJECT_HANDOFF.md)
 - [Статус проекта](docs/PROJECT_STATUS.md)
 - [Архитектура](docs/ARCHITECTURE.md)
 - [Безопасность](docs/SECURITY.md)
@@ -50,6 +52,7 @@ MIT — см. [LICENSE](LICENSE). Сторонние зависимости и �
 - [План Stage 2 — Core Infrastructure](docs/STAGE_2_CORE_INFRASTRUCTURE.md)
 - [Отчёт Stage 2 — Core Infrastructure](docs/STAGE_2_CORE_INFRASTRUCTURE_REPORT.md)
 - [План Stage 3 — Model Runtime](docs/STAGE_3_MODEL_RUNTIME.md)
+- [Проверка этапа 3 на оборудовании](docs/STAGE_3_HARDWARE_VALIDATION.md)
 - [Навыки агентов](skills/README.md)
 
 ## Правило начала работ
