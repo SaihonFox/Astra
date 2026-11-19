@@ -245,7 +245,10 @@ ASTRA_TEST_MODEL=<absolute path to .gguf> \
 
 CI (GitHub Actions, Ubuntu + Windows):
 
-- Latest green run for the current code: [44468595677](https://github.com/SaihonFox/Astra/actions/runs/44468595677).
+- Latest green run for the current documentation snapshot (`e4ad401`):
+  [44471553581](https://github.com/SaihonFox/Astra/actions/runs/44471553581).
+- Latest green run for the inference code (`b274875`):
+  [44468595677](https://github.com/SaihonFox/Astra/actions/runs/44468595677).
 - Earlier green runs are listed in `docs/PROJECT_STATUS.md`.
 - CI never downloads models and never uses a GPU.
 - **Known flake:** Windows failed once on a docs-only commit

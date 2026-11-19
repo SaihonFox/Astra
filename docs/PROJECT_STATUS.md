@@ -130,6 +130,8 @@
   [44464487382](https://github.com/SaihonFox/Astra/actions/runs/44464487382).
 - CI green on Ubuntu and Windows for GPU capability logging: run
   [44468595677](https://github.com/SaihonFox/Astra/actions/runs/44468595677).
+- CI green on Ubuntu and Windows for the project handoff and refreshed status docs: run
+  [44471553581](https://github.com/SaihonFox/Astra/actions/runs/44471553581).
 - Known flake: Windows failed once in run
   [44464834270](https://github.com/SaihonFox/Astra/actions/runs/44464834270) on a docs-only
   commit, then passed with the same test code. The workflow now reports failed tests through
