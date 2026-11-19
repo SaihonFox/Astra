@@ -30,8 +30,11 @@ public sealed class ModelHostFixture : IAsyncLifetime
 		Process = await ModelHostProcess.StartAsync(
 			AstraPaths.Resolve(_root),
 			assemblyPath,
-			"test",
-			runtimeName: "echo");
+			new ModelHostProcessOptions
+			{
+				InstanceName = "test",
+				RuntimeName = "echo",
+			});
 	}
 
 	public async Task DisposeAsync()

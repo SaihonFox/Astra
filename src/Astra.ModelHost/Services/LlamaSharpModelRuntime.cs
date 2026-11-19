@@ -19,6 +19,7 @@ namespace Astra.ModelHost.Services;
 internal sealed class LlamaSharpModelRuntime : ILocalModelRuntime
 {
 	private readonly SemaphoreSlim _operationLock = new(1, 1);
+	private readonly ModelHostRuntimeLimits _limits;
 	private LLamaWeights? _weights;
 	private LLamaContext? _context;
 	private LLamaEmbedder? _embedder;
@@ -26,6 +27,13 @@ internal sealed class LlamaSharpModelRuntime : ILocalModelRuntime
 	private string? _modelPath;
 	private int _gpuLayerCount;
 	private int _disposeRequested;
+
+	/// <summary>Initializes a new instance of the <see cref="LlamaSharpModelRuntime"/> class.</summary>
+	/// <param name="limits">Resource limits enforced before loading.</param>
+	public LlamaSharpModelRuntime(ModelHostRuntimeLimits limits)
+	{
+		_limits = limits;
+	}
 
 	/// <inheritdoc />
 	public string? LoadedModelId => Volatile.Read(ref _loadedModelId);
@@ -43,6 +51,18 @@ internal sealed class LlamaSharpModelRuntime : ILocalModelRuntime
 		{
 			throw new InvalidOperationException(
 				"The model file does not exist. Register the model again after placing the file.");
+		}
+
+		if (_limits.MaxModelBytes is { } maxModelBytes)
+		{
+			var modelLength = new FileInfo(options.ModelPath).Length;
+
+			if (modelLength > maxModelBytes)
+			{
+				throw new InvalidOperationException(
+					$"The model file is {modelLength} bytes, which exceeds the configured limit " +
+					$"of {maxModelBytes} bytes.");
+			}
 		}
 
 		await _operationLock.WaitAsync(cancellationToken).ConfigureAwait(false);

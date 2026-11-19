@@ -357,7 +357,7 @@ public sealed class ModelHostClient : ILocalModelRuntime
 		StatusCode.NotFound => new KeyNotFoundException(exception.Status.Detail, exception),
 		StatusCode.Cancelled => new OperationCanceledException(exception.Status.Detail, exception),
 		StatusCode.DeadlineExceeded => new TimeoutException(exception.Status.Detail, exception),
-		StatusCode.Unavailable => new InvalidOperationException(
+		StatusCode.Unavailable => new ModelHostUnavailableException(
 			"ModelHost is unavailable.",
 			exception),
 		_ => new InvalidOperationException(

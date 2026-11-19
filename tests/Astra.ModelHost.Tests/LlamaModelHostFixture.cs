@@ -30,7 +30,7 @@ public sealed class LlamaModelHostFixture : IAsyncLifetime
 		Process = await ModelHostProcess.StartAsync(
 			AstraPaths.Resolve(_root),
 			assemblyPath,
-			"llama");
+			new ModelHostProcessOptions { InstanceName = "llama" });
 	}
 
 	public async Task DisposeAsync()

@@ -97,7 +97,13 @@
   - real inference validated on Linux CPU with Qwen3-4B-Q4_K_M (2.4 GB, context 512):
     load 7.5 s, 16 tokens in 3.9 s, 2560-dimension embeddings in 0.6 s.
   - `--runtime llama` is the default; `--runtime echo` remains for tests and diagnostics.
-- 78 tests total (23 core, 34 infrastructure, 2 host, 19 ModelHost).
+- Supervision and basic admission (phase 3.7):
+  - `ModelHostSupervisor` (client library) starts ModelHost on demand, restarts it with
+    bounded backoff after a crash and reloads the active model.
+  - Verified by killing the child process: the next generation restarts, reloads and streams.
+  - `--max-model-bytes` rejects oversized model files before native loading; context, token,
+    prompt, embedding-batch and GPU-layer limits are enforced by shared validation.
+- 84 tests total (23 core, 34 infrastructure, 2 host, 25 ModelHost).
 - Verified locally: fresh database applies migrations 1–2, exposes `models`, and `/health`
   is healthy.
 - CI green on Ubuntu and Windows for the registry commit: run
@@ -107,8 +113,10 @@
 - CI green on Ubuntu and Windows for the ModelHost IPC commit: run
   [44460539305](https://github.com/SaihonFox/Astra/actions/runs/44460539305).
   Ubuntu exercised Unix sockets, Windows exercised named pipes.
-- Not yet verified: CPU inference on Windows, CUDA offload on the GTX 1650, resource
-  admission and Host-side supervision.
+- CI green on Ubuntu and Windows for the LLamaSharp adapter: run
+  [44462869583](https://github.com/SaihonFox/Astra/actions/runs/44462869583).
+- Not yet verified: CPU inference on Windows, CUDA offload on the GTX 1650, and Host-side
+  wiring of the supervisor.
 
 ## Verification performed
 
@@ -117,7 +125,7 @@ Local environment, 2026-11-18, Ubuntu 26.04, SDK 10.0.115:
 ```
 dotnet restore AstraAgent.slnx --locked-mode                  → succeeded
 dotnet build AstraAgent.slnx --no-restore -c Release          → 0 warnings, 0 errors
-dotnet test AstraAgent.slnx --no-build -c Release             → 78 passed, 0 failed, 0 skipped
+dotnet test AstraAgent.slnx --no-build -c Release             → 84 passed, 0 failed, 0 skipped
 dotnet format AstraAgent.slnx --verify-no-changes             → exit 0
 ```
 
@@ -150,8 +158,8 @@ GitHub Actions run 44345679716 — **success** (Stage 1 commit):
 ## Current work
 
 Stage 3 — Model Runtime, phase 3.6: validate CPU inference on Windows and CUDA offload on the
-GTX 1650, then phase 3.7 resource admission and Host-side supervision, and phase 3.8 report.
-ModelHost is not yet started by `Astra.Host`.
+GTX 1650. These require the owner's machine. Phase 3.8 will then collect evidence and the
+stage report. ModelHost is not yet started by `Astra.Host`; it will be wired in Stage 4.
 
 Real-model and GPU validation must run on the target Windows machine with the GTX 1650.
 Policy Engine remains Stage 4.

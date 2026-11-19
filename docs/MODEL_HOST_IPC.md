@@ -61,6 +61,8 @@ names, access control, handshake fields, message limits and supervision behavior
 
 - Maximum gRPC message size: 8 MiB in both directions, configured on the server. Larger
   requests fail at the transport instead of reaching the runtime.
+- `--max-model-bytes` (optional) rejects a model file before native loading when it exceeds
+  the configured size.
 - Requests are validated on the client and again on the server with
   `LocalRuntimeValidation`, so a compromised or buggy peer cannot bypass limits such as
   maximum prompt size, token count, temperature range or embedding batch size.
@@ -76,6 +78,9 @@ names, access control, handshake fields, message limits and supervision behavior
   on the endpoint is rejected.
 - `StopAsync` sends `Shutdown` with a 3 s deadline, waits up to 5 s for exit, then kills the
   process tree. `DisposeAsync` always disposes the channel and the `Process` handle.
+- `ModelHostSupervisor` (client library) adds on-demand start, serialized calls, crash
+  detection, bounded restarts and reload of the active model. It is covered by process-kill
+  tests; Host wiring arrives with Agent Core.
 - Logs go to `<data-root>/logs/modelhost-*.jsonl`; the host process does not write model
   content or prompts to logs.
 
@@ -83,7 +88,7 @@ names, access control, handshake fields, message limits and supervision behavior
 
 - gRPC over named pipes is only exercised on Windows CI; Linux CI exercises Unix sockets.
 - If the owning `Astra.Host` process crashes after startup, ModelHost is not terminated by
-  the OS. A watchdog or job object is planned with the supervision work in phase 3.7.
+  the OS. A watchdog or job object remains pending for the Host wiring phase.
 - A same-user process can still connect to the endpoint and call `Shutdown` or `Generate`.
   Peer authentication beyond OS ACLs is not implemented and is not planned for local IPC.
 - Backpressure during streaming is provided by HTTP/2 flow control only; there is no

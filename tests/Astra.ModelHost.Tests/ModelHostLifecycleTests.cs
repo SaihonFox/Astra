@@ -13,8 +13,7 @@ public sealed class ModelHostLifecycleTests
 		var process = await ModelHostProcess.StartAsync(
 			AstraPaths.Resolve(root),
 			ModelHostAssemblyPath(),
-			"lifecycle",
-			runtimeName: "echo");
+			EchoOptions("lifecycle"));
 
 		try
 		{
@@ -43,8 +42,7 @@ public sealed class ModelHostLifecycleTests
 				() => ModelHostProcess.StartAsync(
 					AstraPaths.Resolve(root),
 					missing,
-					"missing",
-					runtimeName: "echo"));
+					EchoOptions("missing")));
 
 			Assert.Contains("was not found", exception.Message, StringComparison.OrdinalIgnoreCase);
 			Assert.False(File.Exists(missing));
@@ -64,8 +62,7 @@ public sealed class ModelHostLifecycleTests
 		var process = await ModelHostProcess.StartAsync(
 			paths,
 			ModelHostAssemblyPath(),
-			"duplicate",
-			runtimeName: "echo");
+			EchoOptions("duplicate"));
 
 		try
 		{
@@ -73,8 +70,7 @@ public sealed class ModelHostLifecycleTests
 				() => ModelHostProcess.StartAsync(
 					paths,
 					ModelHostAssemblyPath(),
-					"duplicate",
-					runtimeName: "echo"));
+					EchoOptions("duplicate")));
 
 			Assert.Contains("already", exception.Message, StringComparison.OrdinalIgnoreCase);
 			Assert.True(process.IsRunning);
@@ -90,6 +86,12 @@ public sealed class ModelHostLifecycleTests
 		Path.GetTempPath(),
 		"astra-mh",
 		Guid.NewGuid().ToString("N")[..8]);
+
+	private static ModelHostProcessOptions EchoOptions(string instanceName) => new()
+	{
+		InstanceName = instanceName,
+		RuntimeName = "echo",
+	};
 
 	private static string ModelHostAssemblyPath() => Path.Combine(
 		AppContext.BaseDirectory,

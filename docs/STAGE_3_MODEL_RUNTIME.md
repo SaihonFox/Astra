@@ -50,8 +50,8 @@ yet decide which model to use; it will consume this runtime in Stage 4.
 | 3.3 | Runtime contract and fake runtime | Completed |
 | 3.4 | ModelHost process and IPC contract | Completed |
 | 3.5 | LLamaSharp adapter and CPU backend | Completed on Linux CPU; Windows CPU validation pending |
-| 3.6 | Optional CUDA 12 backend on target hardware | Planned |
-| 3.7 | Resource admission and diagnostics | Planned |
+| 3.6 | Optional CUDA 12 backend on target hardware | Pending owner hardware |
+| 3.7 | Resource admission and supervision | Completed |
 | 3.8 | Stage report and CI verification | Planned |
 
 ## Environment facts (2026-11-18)
@@ -123,6 +123,16 @@ unload                    → graceful, process exits
 
 The same model was not loaded in CI; tests use the echo runtime or invalid GGUF files.
 
+Supervision and admission, 2026-11-19:
+
+- `ModelHostSupervisor` starts ModelHost on demand, serializes runtime calls, detects a dead
+  process, restarts with bounded exponential backoff and reloads the last model.
+- Tested by killing the child process: the next generation restarts it, reloads the model and
+  returns output; an unloaded model is not restored.
+- `--max-model-bytes` rejects oversized files before native loading; the process stays alive.
+- Limit: if `Astra.Host` itself crashes, the child process is not killed by the OS. A job
+  object/watchdog remains for the Host wiring phase.
+
 ModelHost IPC phase, 2026-11-19:
 
 ```
@@ -141,4 +151,6 @@ dotnet format --verify-no-changes        → exit 0
 - CI run 44460539305 (commit 8a723d0) → success on Ubuntu and Windows. The Windows job
   exercised the named-pipe transport and the same IPC tests; local verification here
   cannot.
+- CI run 44462869583 (commit 45e27f7) → success on Ubuntu and Windows with LLamaSharp
+  packages and native backend present.
 

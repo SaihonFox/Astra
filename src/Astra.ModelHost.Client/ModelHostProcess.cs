@@ -44,12 +44,7 @@ public sealed class ModelHostProcess : IAsyncDisposable
 	/// </summary>
 	/// <param name="paths">Resolved Astra paths; used for the IPC endpoint and logs.</param>
 	/// <param name="modelHostAssemblyPath">Absolute path to Astra.ModelHost.dll or the app host.</param>
-	/// <param name="instanceName">Logical instance name; isolates endpoints per data root.</param>
-	/// <param name="startupTimeout">Maximum startup time; defaults to 20 seconds.</param>
-	/// <param name="runtimeName">
-	/// Runtime to start: <c>llama</c> (default) or <c>echo</c>. Tests use <c>echo</c> so CI does
-	/// not need model files or native inference.
-	/// </param>
+	/// <param name="options">Process tunables; defaults are used when omitted.</param>
 	/// <param name="cancellationToken">Cancellation token.</param>
 	/// <exception cref="ArgumentException">An argument is invalid.</exception>
 	/// <exception cref="InvalidOperationException">
@@ -59,15 +54,23 @@ public sealed class ModelHostProcess : IAsyncDisposable
 	public static async Task<ModelHostProcess> StartAsync(
 		AstraPaths paths,
 		string modelHostAssemblyPath,
-		string instanceName = "default",
-		TimeSpan? startupTimeout = null,
-		string? runtimeName = null,
+		ModelHostProcessOptions? options = null,
 		CancellationToken cancellationToken = default)
 	{
 		ArgumentNullException.ThrowIfNull(paths);
 		ArgumentNullException.ThrowIfNull(modelHostAssemblyPath);
 		ArgumentException.ThrowIfNullOrWhiteSpace(modelHostAssemblyPath);
-		ValidateInstanceName(instanceName);
+
+		var effectiveOptions = options ?? new ModelHostProcessOptions();
+		ValidateInstanceName(effectiveOptions.InstanceName);
+
+		if (effectiveOptions.MaxModelBytes is <= 0)
+		{
+			throw new ArgumentOutOfRangeException(
+				nameof(options),
+				effectiveOptions.MaxModelBytes,
+				"The model size limit must be positive when set.");
+		}
 
 		if (!Path.IsPathFullyQualified(modelHostAssemblyPath))
 		{
@@ -84,7 +87,7 @@ public sealed class ModelHostProcess : IAsyncDisposable
 
 		paths.EnsureDirectories();
 
-		var endpoint = ResolveEndpoint(paths, instanceName);
+		var endpoint = ResolveEndpoint(paths, effectiveOptions.InstanceName);
 
 		if (endpoint.Transport == ModelHostTransport.UnixSocket && File.Exists(endpoint.Address))
 		{
@@ -97,7 +100,11 @@ public sealed class ModelHostProcess : IAsyncDisposable
 			File.Delete(endpoint.Address);
 		}
 
-		var startInfo = BuildStartInfo(modelHostAssemblyPath, endpoint, paths.Root, runtimeName);
+		var startInfo = BuildStartInfo(
+			modelHostAssemblyPath,
+			endpoint,
+			paths.Root,
+			effectiveOptions);
 		var process = new Process { StartInfo = startInfo };
 
 		try
@@ -112,8 +119,11 @@ public sealed class ModelHostProcess : IAsyncDisposable
 
 		try
 		{
-			return await WaitForReadyAsync(process, endpoint, startupTimeout, cancellationToken)
-				.ConfigureAwait(false);
+			return await WaitForReadyAsync(
+				process,
+				endpoint,
+				effectiveOptions.StartupTimeout,
+				cancellationToken).ConfigureAwait(false);
 		}
 		catch
 		{
@@ -126,10 +136,9 @@ public sealed class ModelHostProcess : IAsyncDisposable
 	private static async Task<ModelHostProcess> WaitForReadyAsync(
 		Process process,
 		ModelHostEndpoint endpoint,
-		TimeSpan? startupTimeout,
+		TimeSpan timeout,
 		CancellationToken cancellationToken)
 	{
-		var timeout = startupTimeout ?? TimeSpan.FromSeconds(20);
 		var deadline = DateTime.UtcNow + timeout;
 		Exception? lastError = null;
 
@@ -245,7 +254,7 @@ public sealed class ModelHostProcess : IAsyncDisposable
 		string modelHostAssemblyPath,
 		ModelHostEndpoint endpoint,
 		string dataRoot,
-		string? runtimeName)
+		ModelHostProcessOptions options)
 	{
 		var directory = Path.GetDirectoryName(modelHostAssemblyPath)
 			?? throw new ArgumentException(
@@ -275,10 +284,17 @@ public sealed class ModelHostProcess : IAsyncDisposable
 		startInfo.ArgumentList.Add("--data-root");
 		startInfo.ArgumentList.Add(dataRoot);
 
-		if (runtimeName is not null)
+		if (options.RuntimeName is not null)
 		{
 			startInfo.ArgumentList.Add("--runtime");
-			startInfo.ArgumentList.Add(runtimeName);
+			startInfo.ArgumentList.Add(options.RuntimeName);
+		}
+
+		if (options.MaxModelBytes is { } maxModelBytes)
+		{
+			startInfo.ArgumentList.Add("--max-model-bytes");
+			startInfo.ArgumentList.Add(
+				maxModelBytes.ToString(System.Globalization.CultureInfo.InvariantCulture));
 		}
 
 		return startInfo;

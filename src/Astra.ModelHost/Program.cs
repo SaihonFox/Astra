@@ -52,6 +52,27 @@ builder.Host.UseSerilog((context, _, configuration) => configuration
 		fileSizeLimitBytes: 64 * 1024 * 1024,
 		rollOnFileSizeLimit: true));
 
+var maxModelBytesValue = builder.Configuration["max-model-bytes"];
+long? maxModelBytes = null;
+
+if (!string.IsNullOrWhiteSpace(maxModelBytesValue))
+{
+	if (!long.TryParse(
+			maxModelBytesValue,
+			NumberStyles.None,
+			CultureInfo.InvariantCulture,
+			out var parsed) ||
+		parsed <= 0)
+	{
+		throw new InvalidOperationException(
+			"--max-model-bytes must be a positive integer.");
+	}
+
+	maxModelBytes = parsed;
+}
+
+builder.Services.AddSingleton(new ModelHostRuntimeLimits(maxModelBytes));
+
 var runtimeName = builder.Configuration["runtime"] ?? "llama";
 
 if (string.Equals(runtimeName, "llama", StringComparison.Ordinal))
