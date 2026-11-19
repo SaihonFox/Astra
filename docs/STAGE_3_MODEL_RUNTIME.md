@@ -157,4 +157,6 @@ dotnet format --verify-no-changes        → exit 0
   cannot.
 - CI run 44462869583 (commit 45e27f7) → success on Ubuntu and Windows with LLamaSharp
   packages and native backend present.
+- CI run 44464487382 (commit 91489a1) → success on Ubuntu and Windows with supervision,
+  admission and the hardware-gated test present.
 

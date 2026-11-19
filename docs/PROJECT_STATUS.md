@@ -121,6 +121,8 @@
   Ubuntu exercised Unix sockets, Windows exercised named pipes.
 - CI green on Ubuntu and Windows for the LLamaSharp adapter: run
   [44462869583](https://github.com/SaihonFox/Astra/actions/runs/44462869583).
+- CI green on Ubuntu and Windows for supervision, admission and the hardware runbook: run
+  [44464487382](https://github.com/SaihonFox/Astra/actions/runs/44464487382).
 - Not yet verified: CPU inference on Windows, CUDA offload on the GTX 1650, and Host-side
   wiring of the supervisor.
 
