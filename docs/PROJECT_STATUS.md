@@ -165,6 +165,9 @@ dotnet test AstraAgent.slnx --no-build -c Release             → 85 passed, 0 f
 dotnet format AstraAgent.slnx --verify-no-changes             → exit 0
 ```
 
+The documented laptop sequence was repeated on 2026-11-20 against a fresh clone of `acfb463`
+(no `bin/obj`): locked restore, build with 0 warnings, 85 tests and format all passed.
+
 Runtime check with a temporary data root:
 
 ```

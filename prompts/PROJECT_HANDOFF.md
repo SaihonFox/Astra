@@ -6,7 +6,7 @@
 > to do next. Read it after `AGENTS.md` and before changing code.
 >
 > **Snapshot:** 2026-11-20, repository `SaihonFox/Astra`, branch `master`. The snapshot was
-> refreshed after commit `e4ad401`; always confirm the actual commit with `git log -1` and the
+> refreshed after commit `acfb463`; always confirm the actual commit with `git log -1` and the
 > working tree with `git status`.
 
 ---
@@ -224,8 +224,9 @@ dotnet test AstraAgent.slnx --no-build -c Release             → 85 passed, 0 f
 dotnet format AstraAgent.slnx --verify-no-changes             → exit 0
 ```
 
-A clean copy without `bin/obj` was restored with `--locked-mode`, built and tested
-successfully.
+The same sequence was run on 2026-11-20 against a fresh `git clone` of `acfb463` with no
+`bin/obj`, exactly as on the laptop: `restore --locked-mode` succeeded, the build completed
+with 0 warnings, 85 tests passed and `dotnet format --verify-no-changes` exited 0.
 
 Real-model validation on Linux CPU with `Qwen3-4B-Q4_K_M.gguf` (2.4 GB, pre-existing local
 file, context 512):
