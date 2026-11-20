@@ -86,11 +86,23 @@ public sealed class ModelHostClient : ILocalModelRuntime
 					string.IsNullOrEmpty(response.LoadedModelId) ? null : response.LoadedModelId,
 					response.ProcessId));
 		}
-		catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
+		// gRPC may surface a canceled handshake token either as OperationCanceledException or
+		// as RpcException(Cancelled); both are retryable timeouts when the caller's token is
+		// still active. Windows runners reproduced this as a startup failure under load.
+		catch (Exception exception) when (
+			!cancellationToken.IsCancellationRequested &&
+			(exception is OperationCanceledException ||
+			 exception is RpcException { StatusCode: StatusCode.Cancelled }))
 		{
 			channel.Dispose();
 			throw new TimeoutException(
-				$"ModelHost did not complete the handshake within {effectiveTimeout}.");
+				$"ModelHost did not complete the handshake within {effectiveTimeout}.",
+				exception);
+		}
+		catch (RpcException exception) when (cancellationToken.IsCancellationRequested)
+		{
+			channel.Dispose();
+			throw new OperationCanceledException(exception.Status.Detail, exception, cancellationToken);
 		}
 		catch
 		{

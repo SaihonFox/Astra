@@ -252,16 +252,21 @@ CI (GitHub Actions, Ubuntu + Windows):
   [44468595677](https://github.com/SaihonFox/Astra/actions/runs/44468595677).
 - Earlier green runs are listed in `docs/PROJECT_STATUS.md`.
 - CI never downloads models and never uses a GPU.
-- **Known flake:** Windows failed twice on commits that changed no product code — runs
+- **Windows flake, now identified and fixed:** runs
   [44464834270](https://github.com/SaihonFox/Astra/actions/runs/44464834270) and
-  [44471882692](https://github.com/SaihonFox/Astra/actions/runs/44471882692). The second run
-  proved that the first version of the reporting step was skipped: its
-  `steps.test.outcome == 'failure'` condition did not run after the failure. The step now uses
-  `if: failure()`, tees `dotnet test` output to `test-output.log`, and publishes non-passed TRX
-  results, run-level errors and a log tail in the step summary and in error annotations.
-  ModelHost test collections are serialized (`xunit.runner.json`) to reduce process-start
-  contention on Windows. The failing test is still unknown; the next Windows failure will
-  name it.
+  [44471882692](https://github.com/SaihonFox/Astra/actions/runs/44471882692) failed on commits
+  with identical product code. The improved reporting in run
+  [44686500462](https://github.com/SaihonFox/Astra/actions/runs/44686500462) named
+  `ModelHostLifecycleTests.StopAsyncShutsDownTheProcess` with `RpcException(Cancelled)` from
+  the startup handshake. A `GetInfo` attempt canceled by its 2 s timeout surfaced as
+  `RpcException(StatusCode.Cancelled)` instead of `OperationCanceledException`, so the readiness
+  loop treated it as fatal instead of retrying within the 20 s startup deadline; a loaded
+  Windows runner hits this while ModelHost is still starting. `ModelHostClient.ConnectAsync`
+  now maps that case to `TimeoutException` (retryable) and preserves caller cancellation as
+  `OperationCanceledException`. The first version of the reporting step was also skipped
+  because `steps.test.outcome == 'failure'` did not run after the failure; it now uses
+  `if: failure()`, tees `dotnet test` output, and publishes non-passed TRX results, run-level
+  errors and a log tail. ModelHost test collections are serialized (`xunit.runner.json`).
 
 ---
 
@@ -470,13 +475,14 @@ On the laptop use the owner's normal Git credentials instead.
   object/watchdog is still pending for the Host wiring phase.
 - **Log redaction is not implemented.** Never log prompts, completions, file contents or
   secrets. Serilog writes console and rolling compact JSON under `<data-root>/logs`.
-- **Flaky Windows test run.** Two runs failed on commits with identical product code. Treat a
-  single Windows failure as suspicious but not automatically as a code regression; read the
-  `Report failures` step summary or annotation for the test name, rerun, and record it. Public
-  job logs and TRX artifacts need authentication, but `GET /repos/SaihonFox/Astra/actions/runs/<id>/jobs`
-  is public and shows which step failed; `.../annotations_partial` (with
-  `X-Requested-With: XMLHttpRequest`) shows annotations. A browser user agent is needed for the
-  run HTML page; job logs still return 404 without a token.
+- **Windows startup timing.** The earlier Windows flake was a canceled 2 s `GetInfo` handshake
+  attempt surfacing as `RpcException(Cancelled)` instead of `OperationCanceledException`, which
+  the readiness loop treated as fatal. Keep per-attempt handshake failures retryable until the
+  20 s startup deadline; only caller cancellation should abort. Do not widen this before
+  checking which exception type gRPC produced. Public job logs and TRX artifacts need
+  authentication, but `GET /repos/SaihonFox/Astra/actions/runs/<id>/jobs` is public and shows
+  which step failed, and `.../annotations_partial` (with `X-Requested-With: XMLHttpRequest`)
+  shows annotations; a browser user agent is needed for the run HTML page.
 - **No models in CI.** Do not add a test that downloads or commits weights. Hardware tests
   are trait-gated by `ASTRA_TEST_MODEL` and are no-ops otherwise.
 

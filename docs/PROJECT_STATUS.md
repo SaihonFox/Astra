@@ -134,15 +134,21 @@
   [44471553581](https://github.com/SaihonFox/Astra/actions/runs/44471553581).
 - CI green on Ubuntu and Windows after fixing failure reporting and serializing ModelHost
   tests: run [44686114240](https://github.com/SaihonFox/Astra/actions/runs/44686114240).
-- Known flake: Windows failed twice on commits that changed no product code — runs
+- Windows flake identified and fixed. Runs
   [44464834270](https://github.com/SaihonFox/Astra/actions/runs/44464834270) and
-  [44471882692](https://github.com/SaihonFox/Astra/actions/runs/44471882692). The failing test
-  is still unidentified. In the second run the `Report failed tests` step was skipped because
-  its `steps.test.outcome == 'failure'` condition was not evaluated after the failure; the
-  workflow now uses `if: failure()`, captures the `dotnet test` output, and writes every
-  non-passed TRX result, run-level error and a 200-line log tail to the step summary and to
-  error annotations. ModelHost test collections are serialized to reduce process-start
-  contention on Windows. The next Windows failure will name the test.
+  [44471882692](https://github.com/SaihonFox/Astra/actions/runs/44471882692) failed on commits
+  with identical product code. With the new failure reporting, run
+  [44686500462](https://github.com/SaihonFox/Astra/actions/runs/44686500462) named
+  `ModelHostLifecycleTests.StopAsyncShutsDownTheProcess` with `RpcException(Cancelled)` from
+  the startup handshake. Root cause: a `GetInfo` handshake attempt canceled by its 2 s timeout
+  surfaced as `RpcException(StatusCode.Cancelled)` instead of
+  `OperationCanceledException`, and the readiness loop treated it as fatal instead of retrying
+  within the 20 s startup deadline. Under load, a Windows runner hits this while ModelHost is
+  still starting. `ModelHostClient.ConnectAsync` now maps a canceled handshake attempt to
+  `TimeoutException` (retryable) when the caller's token is active, and to
+  `OperationCanceledException` when the caller cancels. ModelHost test collections are also
+  serialized to reduce process-start contention, and the workflow publishes failed test names,
+  TRX outcomes and a log tail without requiring authenticated job-log access.
 - Not yet verified: CPU inference on Windows, CUDA offload on the GTX 1650, and Host-side
   wiring of the supervisor.
 
