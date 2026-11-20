@@ -5,7 +5,7 @@ description: Implement maintainable C# and .NET components for Astra.
 
 # .NET Engineering Skill
 
-- Target the repository's selected .NET 10 SDK and verify it is installed.
+- Target the repository's selected .NET 11 SDK and verify it is installed (ADR 0009).
 - Use `.slnx`; enable nullable reference types and analyzers.
 - Prefer async I/O and propagate `CancellationToken`.
 - Keep UI code non-blocking.

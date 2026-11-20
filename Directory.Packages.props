@@ -5,8 +5,9 @@
   </PropertyGroup>
 
   <!--
-    Versions follow the .NET 10 SDK xunit template baseline unless noted.
-    Upgrade only after compatibility, license and test validation (see ADR 0004).
+    Versions follow the repository baseline; framework-aligned Microsoft packages track
+    .NET 11 (ADR 0009). Upgrade only after compatibility, license and test validation
+    (see ADR 0004).
   -->
   <ItemGroup>
     <PackageVersion Include="Google.Protobuf" Version="3.36.2" />
@@ -17,8 +18,8 @@
     <PackageVersion Include="LLamaSharp" Version="0.30.0" />
     <PackageVersion Include="LLamaSharp.Backend.Cpu" Version="0.30.0" />
     <PackageVersion Include="LLamaSharp.Backend.Cuda12" Version="0.30.0" />
-    <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="10.0.15" />
-    <PackageVersion Include="Microsoft.Data.Sqlite" Version="10.0.15" />
+    <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="11.0.0" />
+    <PackageVersion Include="Microsoft.Data.Sqlite" Version="11.0.0" />
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
     <PackageVersion Include="Serilog.AspNetCore" Version="11.0.0" />
     <PackageVersion Include="Serilog.Formatting.Compact" Version="3.0.0" />

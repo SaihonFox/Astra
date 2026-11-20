@@ -13,10 +13,10 @@ access or a populated database, and must make failures visible in CI.
 
 ## Decision
 
-1. xUnit (v2) is the test framework. Initial versions follow the .NET 10 SDK xunit template
-   baseline: `xunit` 2.9.3, `xunit.runner.visualstudio` 3.1.4, `Microsoft.NET.Test.Sdk`
-   17.14.1. `Microsoft.AspNetCore.Mvc.Testing` is pinned to 10.0.15 to match the installed
-   ASP.NET Core runtime.
+1. xUnit (v2) is the test framework. Initial versions came from the .NET 10 SDK xunit template
+   and are unchanged by the .NET 11 move: `xunit` 2.9.3, `xunit.runner.visualstudio` 3.1.4,
+   `Microsoft.NET.Test.Sdk` 17.14.1. `Microsoft.AspNetCore.Mvc.Testing` is pinned to 11.0.0 to
+   match the installed ASP.NET Core runtime (see ADR 0009).
 2. Each production project gets a test project under `tests/<ProductionProject>.Tests`
    only when it has testable behavior; the test project references the production project.
 3. Test categories:

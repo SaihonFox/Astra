@@ -2,8 +2,8 @@
 
 ## Prerequisites
 
-- .NET 10 SDK. Verified locally with **10.0.115**; `global.json` pins the 10.0.1xx feature
-  band with `rollForward: latestFeature`.
+- .NET 11 SDK. Verified locally with **11.0.100**; `global.json` pins the 11.0.1xx feature
+  band with `rollForward: latestFeature` (ADR 0009).
 - Git.
 - Windows build environment (primary platform) and Linux build environment/CI.
 - Kotlin/Android toolchain — only when the Android stage begins.
@@ -52,7 +52,7 @@ skills/, prompts/          guidance for coding agents
 
 ## Commands
 
-Verified with SDK 10.0.115 on Ubuntu 26.04:
+Verified with SDK 11.0.100 on Windows 10 22H2 and Ubuntu 26.04 (see the Stage 3 report):
 
 ```bash
 dotnet restore AstraAgent.slnx --locked-mode

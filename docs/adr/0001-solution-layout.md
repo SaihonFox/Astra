@@ -15,8 +15,8 @@ product subsystems exist.
 
 ## Decision
 
-1. One solution at the repository root: `AstraAgent.slnx`. Target framework `net10.0`,
-   C# 14.
+1. One solution at the repository root: `AstraAgent.slnx`. Target framework `net11.0`,
+   C# 15 (see ADR 0009; originally `net10.0`, C# 14).
 2. Production projects live in `src/Astra.<Capability>/`; test projects live in
    `tests/<ProductionProject>.Tests/`.
 3. Modules are added only when they contain a concrete implementation or a shared

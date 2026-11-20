@@ -208,7 +208,7 @@ Hardware & Environment Profiler определяет CPU, GPU, RAM, VRAM, дис
 
 ## 19. Technology Stack
 
-- C# 14 / .NET 10.
+- C# 15 / .NET 11 (toolchain refresh per ADR 0009; originally C# 14 / .NET 10).
 - Modular Monolith.
 - Avalonia UI.
 - Kotlin + Jetpack Compose.
