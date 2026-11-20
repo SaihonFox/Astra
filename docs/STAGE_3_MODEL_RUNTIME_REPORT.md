@@ -5,18 +5,19 @@
 - **Environment:** Windows 10 22H2 (19045), Ryzen 5 4600H, 7.4 GB RAM, GTX 1650 4 GB,
   .NET SDK 11.0.100 (ADR 0009); earlier evidence was produced on Ubuntu 26.04, 4 vCPU,
   7.6 GB RAM, no GPU, .NET SDK 10.0.115; GitHub Actions `ubuntu-latest` and `windows-latest`
-- **Code commit verified:** `acfb463` for the inference, IPC and supervision code; the working
-  copy additionally contains the .NET 11 baseline (ADR 0009) and this hardware validation, and
-  is not yet committed or pushed (the folder is not a git clone).
+- **Code commit verified:** `acfb463` for the inference, IPC and supervision code; the .NET 11
+  baseline (ADR 0009) and this hardware validation are committed as `cb1efc4` on `master`.
 - **CI runs:** [44688730382](https://github.com/SaihonFox/Astra/actions/runs/44688730382)
-  (code, Ubuntu and Windows green) and
+  (code, Ubuntu and Windows green),
   [44710009253](https://github.com/SaihonFox/Astra/actions/runs/44710009253) (documentation
-  snapshot, Ubuntu and Windows green); the run for this change set is pending a push.
+  snapshot, Ubuntu and Windows green) and
+  [44717828284](https://github.com/SaihonFox/Astra/actions/runs/44717828284) (this change set,
+  commit `cb1efc4`, Ubuntu and Windows green).
 
 > **Status note:** the hardware validation below was executed on the owner's Windows laptop on
 > 2026-11-20. CUDA 12 is recorded as a documented CPU fallback, which satisfies criterion 6.
-> The owner signed Stage 3 off on 2026-11-20. The CI run for this change set is still pending a
-> push, because the working copy is not a git clone.
+> The owner signed Stage 3 off on 2026-11-20, and CI for the change set is green on Ubuntu and
+> Windows (run 44717828284, commit `cb1efc4`).
 
 ## Scope delivered
 
@@ -202,7 +203,7 @@ dotnet test tests/Astra.ModelHost.Tests -c Release --no-build `
 | Embedding dimensions and time | 1024 dimensions, 0.2 s |
 | `GPU offload supported` line | `GPU offload supported: False; requested GPU layers: 0.` |
 | Suite result (85 tests) | 85 passed, 0 failed, 0 skipped |
-| CI run for the validated commit | not available — the working copy is not a git clone; CI runs on the next push |
+| CI run for the validated commit | [44717828284](https://github.com/SaihonFox/Astra/actions/runs/44717828284) — Ubuntu and Windows green for `cb1efc4` |
 
 The hardware test `RealModelHardwareTests.RealModelLoadsGeneratesAndEmbeds` passed in 3 s and
 reported `load: 1.2 s, gpu layers: 0`, `generate: 8 chunks, 37 characters, 0.6 s`,
@@ -241,7 +242,7 @@ embed: 1024 dimensions, 0.2 s
 | `GPU offload supported` line | `False`; warning that the native backend has no usable GPU |
 | Load / generation time | 1.7 s / 0.5 s for 8 tokens (CPU execution) |
 | VRAM used per `nvidia-smi` | 134 MiB idle; no ModelHost allocation observed |
-| `git status` after the CUDA build | committed `src/Astra.ModelHost/packages.lock.json` still lists only `LLamaSharp.Backend.Cpu`; the CUDA restore writes `obj/packages.cuda.lock.json` (ignored). Verified by inspecting both files — the working copy has no `.git`. |
+| `git status` after the CUDA build | the committed `src/Astra.ModelHost/packages.lock.json` still lists only `LLamaSharp.Backend.Cpu` (checked in `cb1efc4`); the CUDA restore writes `obj/packages.cuda.lock.json`, which is ignored |
 | OR: CUDA failure and CPU fallback evidence | as above: opt-in restore/build succeeded, runtime reported no usable GPU and used the CPU |
 
 The CUDA 12 backend needs a driver from the 525/527 branch or newer plus the CUDA 12 toolkit
@@ -274,15 +275,14 @@ pass, so the repository stays on the CPU baseline.
 
 ## Remaining work to close Stage 3
 
-Done on 2026-11-20: Windows CPU validation recorded; CUDA documented as unavailable with the
-CPU fallback; report filled; .NET 11 baseline verified.
+Closed on 2026-11-20: Windows CPU validation recorded; CUDA documented as unavailable with the
+CPU fallback; report filled and signed off; .NET 11 baseline verified; change set committed as
+`cb1efc4` with green CI on Ubuntu and Windows
+([run 44717828284](https://github.com/SaihonFox/Astra/actions/runs/44717828284)).
 
-1. Commit the change set and record its green CI run on Ubuntu and Windows (requires a git
-   clone; the current working copy has no `.git`).
-2. Set the phase table in [STAGE_3_MODEL_RUNTIME.md](STAGE_3_MODEL_RUNTIME.md) to complete.
-3. Update `docs/PROJECT_STATUS.md`, `docs/ROADMAP.md` and `README.md` with the final status.
-4. Obtain owner sign-off before starting Stage 4 — Agent Core, including the Policy Engine,
-   which requires explicit approval.
+Remaining for Stage 4: owner approval of ADRs 0010–0013 (Policy Engine requires explicit
+approval), then implementation in the phase order from
+[STAGE_4_AGENT_CORE.md](STAGE_4_AGENT_CORE.md).
 
 ## References
 

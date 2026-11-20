@@ -69,6 +69,8 @@ signed off; Stage 4 Agent Core is in planning and needs ADR approval before impl
   **.NET 11** (`net11.0`, C# 15, SDK 11.0.100, `Microsoft.Data.Sqlite` 11.0.0,
   `Microsoft.AspNetCore.Mvc.Testing` 11.0.0, lock files regenerated). Verified on Windows
   with SDK 11.0.100: locked restore, build with 0 warnings, 85 tests, format exit 0.
+- CI green on Ubuntu and Windows for the .NET 11 baseline and Stage 3 close-out commit
+  `cb1efc4`: run [44717828284](https://github.com/SaihonFox/Astra/actions/runs/44717828284).
 - ADR 0008 accepted by the owner on 2026-11-18: LLamaSharp as the llama.cpp integration
   inside a dedicated `Astra.ModelHost` process, CPU baseline and optional CUDA 12.
 - Model registry contracts in `Astra.Core`: `ModelDescriptor`, `ModelFormat`,
@@ -167,9 +169,8 @@ signed off; Stage 4 Agent Core is in planning and needs ADR approval before impl
   serialized to reduce process-start contention, and the workflow publishes failed test names,
   TRX outcomes and a log tail without requiring authenticated job-log access.
 - [Stage 3 report](STAGE_3_MODEL_RUNTIME_REPORT.md) signed off by the owner on 2026-11-20.
-- Not yet verified: CI for the .NET 11 change set (the working copy is not a git clone; CI runs
-  on the next push) and Host-side wiring of the supervisor (Stage 4). CUDA offload is
-  documented as unavailable with the validated CPU fallback.
+- Not yet verified: Host-side wiring of the supervisor (Stage 4). CUDA offload is documented as
+  unavailable with the validated CPU fallback.
 
 ## Verification performed
 
@@ -237,9 +238,9 @@ owner approval before implementation:
 No Stage 4 code has been written. ModelHost is still not started by `Astra.Host`; wiring the
 supervisor together with a job object/watchdog is part of Stage 4 phase 4.2.
 
-Stage 3 is signed off. The only outstanding administrative item is committing this change set
-from a real git clone and recording a green CI run on Ubuntu and Windows; the current working
-copy has no `.git`. A new agent should start from
+Stage 3 is signed off, and the change set is committed as `cb1efc4` with green CI on Ubuntu
+and Windows ([run 44717828284](https://github.com/SaihonFox/Astra/actions/runs/44717828284)).
+A new agent should start from
 [prompts/PROJECT_HANDOFF.md](../prompts/PROJECT_HANDOFF.md).
 
 ## Not yet implemented

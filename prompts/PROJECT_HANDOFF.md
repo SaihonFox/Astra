@@ -30,8 +30,7 @@
 **Что осталось до старта этапа 4**
 
 1. Утвердить ADR 0010–0013 (особенно 0013 — Policy Engine, security-critical).
-2. Закоммитить изменения из настоящего git-клона (в текущей папке нет `.git`) и получить
-   зелёный CI на Ubuntu и Windows.
+2. После утверждения — реализовать этап 4 по фазам 4.1–4.7 из плана.
 
 **С чего начать на ноутбуке**
 
@@ -283,6 +282,8 @@ ASTRA_TEST_MODEL=<absolute path to .gguf> \
 
 CI (GitHub Actions, Ubuntu + Windows):
 
+- Latest green run for the .NET 11 baseline and Stage 3 close-out (`cb1efc4`):
+  [44717828284](https://github.com/SaihonFox/Astra/actions/runs/44717828284).
 - Latest green run, including the retryable-handshake fix (`a8640f2`):
   [44688730382](https://github.com/SaihonFox/Astra/actions/runs/44688730382).
 - Latest green run for the inference code (`b274875`):
@@ -360,9 +361,8 @@ modification. Return to the normal CPU build with `dotnet restore AstraAgent.sln
 ### 6.3 Phase 3.8 — Stage 3 report and sign-off
 
 **Done on 2026-11-20**: hardware tables filled, CUDA fallback documented, .NET 11 baseline
-recorded, and the owner signed Stage 3 off. The only remaining administrative item is to commit
-this change set from a real git clone and record a green CI run on Ubuntu and Windows (the
-current working copy has no `.git`, so nothing was pushed).
+recorded, the owner signed Stage 3 off, and the change set is committed as `cb1efc4` with green
+CI on Ubuntu and Windows ([run 44717828284](https://github.com/SaihonFox/Astra/actions/runs/44717828284)).
 
 The report `docs/STAGE_3_MODEL_RUNTIME_REPORT.md` contains scope, acceptance criteria, Linux
 and Windows CPU evidence, the CUDA fallback, the Windows flake analysis and CI history. The

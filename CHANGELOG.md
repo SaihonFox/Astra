@@ -42,6 +42,8 @@
   `global.json`, `Microsoft.Data.Sqlite` and `Microsoft.AspNetCore.Mvc.Testing` 11.0.0,
   lock files regenerated, CI sets up `11.0.x`. Verified on Windows 10 22H2 with SDK 11.0.100:
   locked restore, build with 0 warnings, 85 tests, format exit 0, host `/health` healthy.
+- CI green on Ubuntu and Windows for the change set: run
+  [44717828284](https://github.com/SaihonFox/Astra/actions/runs/44717828284), commit `cb1efc4`.
 - Stage 3 — Model Runtime in progress; model registry completed, runtime not started.
 - Stage 2 — Core Infrastructure completed and signed off; ADRs 0006/0007 accepted.
 - CI verified green on Ubuntu and Windows for the Stage 2 commit (run 44348269884).

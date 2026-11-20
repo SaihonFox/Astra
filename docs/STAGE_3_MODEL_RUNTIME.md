@@ -54,7 +54,7 @@ yet decide which model to use; it will consume this runtime in Stage 4.
 | 3.5 | LLamaSharp adapter and CPU backend | Completed; validated on Linux and Windows CPU |
 | 3.6 | Optional CUDA 12 backend on target hardware | CUDA build restores and runs; no usable GPU (driver 457.49, no CUDA 12 toolkit), CPU fallback validated |
 | 3.7 | Resource admission and supervision | Completed |
-| 3.8 | Stage report and CI verification | Report completed 2026-11-20; CI run pending the next push |
+| 3.8 | Stage report and CI verification | Report signed off 2026-11-20; CI green (run 44717828284) |
 
 ## Environment facts (2026-11-18, updated 2026-11-20)
 
