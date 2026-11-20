@@ -132,10 +132,15 @@
   [44468595677](https://github.com/SaihonFox/Astra/actions/runs/44468595677).
 - CI green on Ubuntu and Windows for the project handoff and refreshed status docs: run
   [44471553581](https://github.com/SaihonFox/Astra/actions/runs/44471553581).
-- Known flake: Windows failed once in run
-  [44464834270](https://github.com/SaihonFox/Astra/actions/runs/44464834270) on a docs-only
-  commit, then passed with the same test code. The workflow now reports failed tests through
-  annotations and the step summary so the next occurrence names the test.
+- Known flake: Windows failed twice on commits that changed no product code — runs
+  [44464834270](https://github.com/SaihonFox/Astra/actions/runs/44464834270) and
+  [44471882692](https://github.com/SaihonFox/Astra/actions/runs/44471882692). The failing test
+  is still unidentified. In the second run the `Report failed tests` step was skipped because
+  its `steps.test.outcome == 'failure'` condition was not evaluated after the failure; the
+  workflow now uses `if: failure()`, captures the `dotnet test` output, and writes every
+  non-passed TRX result, run-level error and a 200-line log tail to the step summary and to
+  error annotations. ModelHost test collections are serialized to reduce process-start
+  contention on Windows. The next Windows failure will name the test.
 - Not yet verified: CPU inference on Windows, CUDA offload on the GTX 1650, and Host-side
   wiring of the supervisor.
 

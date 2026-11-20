@@ -30,42 +30,108 @@ jobs:
         run: dotnet restore AstraAgent.slnx --locked-mode
 
       - name: Build
+        id: build
         run: dotnet build AstraAgent.slnx --no-restore --configuration Release
 
       - name: Verify formatting
+        id: format
         run: dotnet format AstraAgent.slnx --verify-no-changes --no-restore
 
       - name: Test
         id: test
-        run: dotnet test AstraAgent.slnx --no-build --configuration Release --logger "trx;LogFileName=test-results.trx"
-
-      - name: Report failed tests
-        if: steps.test.outcome == 'failure'
         shell: pwsh
         run: |
-          $files = Get-ChildItem -Recurse -Filter *.trx
-          if (-not $files) {
-            Write-Host "No TRX files found."
+          dotnet test AstraAgent.slnx --no-build --configuration Release `
+            --logger "trx;LogFileName=test-results.trx" 2>&1 |
+            Tee-Object -FilePath test-output.log
+          if ($LASTEXITCODE -ne 0) {
+            exit $LASTEXITCODE
+          }
+
+      # Reports failures without requiring authenticated access to the job log, which is not
+      # available to every reader of this public repository. Uses failure() so the step runs
+      # after any earlier failure, not only a failed test step.
+      - name: Report failures
+        if: failure()
+        shell: pwsh
+        run: |
+          $summary = $env:GITHUB_STEP_SUMMARY
+          Add-Content -Path $summary -Value '### CI failure diagnostics'
+          Add-Content -Path $summary -Value (
+            "- build: ``${{ steps.build.outcome }}``, " +
+            "format: ``${{ steps.format.outcome }}``, " +
+            "test: ``${{ steps.test.outcome }}``")
+
+          function Write-LogTail {
+            param([string] $Path, [int] $Lines = 200)
+            if (-not (Test-Path $Path)) {
+              Write-Host "No log file at '$Path'."
+              return
+            }
+
+            Add-Content -Path $summary -Value "``````text"
+            Get-Content -Path $Path -Tail $Lines | ForEach-Object {
+              Add-Content -Path $summary -Value $_
+            }
+            Add-Content -Path $summary -Value "``````"
+          }
+
+          $files = @(Get-ChildItem -Recurse -Filter *.trx -ErrorAction SilentlyContinue)
+          if ($files.Count -eq 0) {
+            Write-Host "No TRX files were produced; dumping the test output."
+            Add-Content -Path $summary -Value 'No TRX files were produced.'
+            Write-LogTail -Path 'test-output.log'
             exit 0
           }
 
           $ns = @{ t = 'http://microsoft.com/schemas/VisualStudio/TeamTest/2010' }
-          $failed = foreach ($file in $files) {
+          $reported = 0
+
+          foreach ($file in $files) {
             [xml]$doc = Get-Content $file.FullName
-            Select-Xml -Xml $doc -XPath '//t:UnitTestResult[@outcome="Failed"]' -Namespace $ns |
-              ForEach-Object { $_.Node }
+            $summaryNode = $doc.TestRun.ResultSummary
+
+            if ($null -ne $summaryNode) {
+              $counters = $summaryNode.Counters
+              Add-Content -Path $summary -Value (
+                "TRX ``$($file.Name)``: outcome ``$($summaryNode.outcome)``, " +
+                "total $($counters.total), passed $($counters.passed), " +
+                "failed $($counters.failed), error $($counters.error), " +
+                "aborted $($counters.aborted), timeout $($counters.timeout)")
+            }
+
+            $runError = Select-Xml -Xml $doc `
+              -XPath '//t:TestRun/t:ResultSummary/t:Output/t:ErrorInfo/t:Message' `
+              -Namespace $ns
+            foreach ($node in $runError) {
+              Add-Content -Path $summary -Value "Run error: $($node.Node.InnerText)"
+            }
+
+            $notPassed = Select-Xml -Xml $doc `
+              -XPath '//t:UnitTestResult[@outcome != "Passed"]' `
+              -Namespace $ns
+
+            foreach ($match in $notPassed) {
+              $result = $match.Node
+              $reported++
+              $message = $result.Output.ErrorInfo.Message
+              $stack = $result.Output.ErrorInfo.StackTrace
+              $escaped = $message -replace '%', '%25' -replace "`r", '%0D' -replace "`n", '%0A'
+              Write-Host "::error title=$($result.outcome) test: $($result.testName)::$escaped"
+              Add-Content -Path $summary -Value (
+                "- ``$($result.outcome)``: ``$($result.testName)`` — $message")
+              if (-not [string]::IsNullOrWhiteSpace($stack)) {
+                Add-Content -Path $summary -Value "``````text`n$stack`n``````"
+              }
+            }
           }
 
-          if (-not $failed) {
-            Write-Host "No failed tests in the TRX file."
-            exit 0
-          }
-
-          foreach ($result in $failed) {
-            $message = $result.Output.ErrorInfo.Message
-            $escaped = $message -replace '%', '%25' -replace "`r", '%0D' -replace "`n", '%0A'
-            Write-Host "::error title=Failed test::$($result.testName)%0A$escaped"
-            Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value "- FAILED: ``$($result.testName)``"
+          if ($reported -eq 0) {
+            Write-Host "dotnet test failed without a non-passed test result."
+            Add-Content -Path $summary -Value (
+              'Test step failed but the TRX has no non-passed result ' +
+              '(for example a test host crash or a build/dependency error).')
+            Write-LogTail -Path 'test-output.log'
           }
 
       - name: Upload test results

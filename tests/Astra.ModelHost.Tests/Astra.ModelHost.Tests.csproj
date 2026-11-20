@@ -19,6 +19,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Update="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\..\src\Astra.Infrastructure\Astra.Infrastructure.csproj" />
     <ProjectReference Include="..\..\src\Astra.ModelHost.Client\Astra.ModelHost.Client.csproj" />
     <ProjectReference Include="..\..\src\Astra.ModelHost\Astra.ModelHost.csproj" ReferenceOutputAssembly="false" />

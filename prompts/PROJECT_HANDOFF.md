@@ -5,8 +5,9 @@
 > GTX 1650. It records what exists, what was verified, what is not verified, and exactly what
 > to do next. Read it after `AGENTS.md` and before changing code.
 >
-> **Snapshot:** 2026-11-19, repository `SaihonFox/Astra`, branch `master`, last commit at the
-> time of writing `17a3caa`. Always confirm with `git log -1` and `git status`.
+> **Snapshot:** 2026-11-20, repository `SaihonFox/Astra`, branch `master`. The snapshot was
+> refreshed after commit `e4ad401`; always confirm the actual commit with `git log -1` and the
+> working tree with `git status`.
 
 ---
 
@@ -245,18 +246,22 @@ ASTRA_TEST_MODEL=<absolute path to .gguf> \
 
 CI (GitHub Actions, Ubuntu + Windows):
 
-- Latest green run for the current documentation snapshot (`e4ad401`):
+- Latest green run for the documentation snapshot before the CI diagnostics fix (`e4ad401`):
   [44471553581](https://github.com/SaihonFox/Astra/actions/runs/44471553581).
 - Latest green run for the inference code (`b274875`):
   [44468595677](https://github.com/SaihonFox/Astra/actions/runs/44468595677).
 - Earlier green runs are listed in `docs/PROJECT_STATUS.md`.
 - CI never downloads models and never uses a GPU.
-- **Known flake:** Windows failed once on a docs-only commit
-  ([44464834270](https://github.com/SaihonFox/Astra/actions/runs/44464834270)) and passed with
-  the same test binaries before and after. The failing test is unknown because job logs and
-  TRX artifacts need an authenticated token. The workflow now writes failed test names and
-  messages to error annotations and the step summary; if it recurs, the annotation names the
-  test.
+- **Known flake:** Windows failed twice on commits that changed no product code — runs
+  [44464834270](https://github.com/SaihonFox/Astra/actions/runs/44464834270) and
+  [44471882692](https://github.com/SaihonFox/Astra/actions/runs/44471882692). The second run
+  proved that the first version of the reporting step was skipped: its
+  `steps.test.outcome == 'failure'` condition did not run after the failure. The step now uses
+  `if: failure()`, tees `dotnet test` output to `test-output.log`, and publishes non-passed TRX
+  results, run-level errors and a log tail in the step summary and in error annotations.
+  ModelHost test collections are serialized (`xunit.runner.json`) to reduce process-start
+  contention on Windows. The failing test is still unknown; the next Windows failure will
+  name it.
 
 ---
 
@@ -465,9 +470,13 @@ On the laptop use the owner's normal Git credentials instead.
   object/watchdog is still pending for the Host wiring phase.
 - **Log redaction is not implemented.** Never log prompts, completions, file contents or
   secrets. Serilog writes console and rolling compact JSON under `<data-root>/logs`.
-- **Flaky Windows test run.** One run failed on a docs-only commit. Treat a single Windows
-  failure with identical code as suspicious but not automatically as a code regression;
-  check the failing test name in the annotation, rerun, and record it.
+- **Flaky Windows test run.** Two runs failed on commits with identical product code. Treat a
+  single Windows failure as suspicious but not automatically as a code regression; read the
+  `Report failures` step summary or annotation for the test name, rerun, and record it. Public
+  job logs and TRX artifacts need authentication, but `GET /repos/SaihonFox/Astra/actions/runs/<id>/jobs`
+  is public and shows which step failed; `.../annotations_partial` (with
+  `X-Requested-With: XMLHttpRequest`) shows annotations. A browser user agent is needed for the
+  run HTML page; job logs still return 404 without a token.
 - **No models in CI.** Do not add a test that downloads or commits weights. Hardware tests
   are trait-gated by `ASTRA_TEST_MODEL` and are no-ops otherwise.
 
