@@ -134,6 +134,8 @@
   [44471553581](https://github.com/SaihonFox/Astra/actions/runs/44471553581).
 - CI green on Ubuntu and Windows after fixing failure reporting and serializing ModelHost
   tests: run [44686114240](https://github.com/SaihonFox/Astra/actions/runs/44686114240).
+- CI green on Ubuntu and Windows after the retryable-handshake fix: run
+  [44688730382](https://github.com/SaihonFox/Astra/actions/runs/44688730382).
 - Windows flake identified and fixed. Runs
   [44464834270](https://github.com/SaihonFox/Astra/actions/runs/44464834270) and
   [44471882692](https://github.com/SaihonFox/Astra/actions/runs/44471882692) failed on commits

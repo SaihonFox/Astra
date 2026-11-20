@@ -246,8 +246,8 @@ ASTRA_TEST_MODEL=<absolute path to .gguf> \
 
 CI (GitHub Actions, Ubuntu + Windows):
 
-- Latest green run for the CI diagnostics and test-stability change (`0ea1c08`):
-  [44686114240](https://github.com/SaihonFox/Astra/actions/runs/44686114240).
+- Latest green run, including the retryable-handshake fix (`a8640f2`):
+  [44688730382](https://github.com/SaihonFox/Astra/actions/runs/44688730382).
 - Latest green run for the inference code (`b274875`):
   [44468595677](https://github.com/SaihonFox/Astra/actions/runs/44468595677).
 - Earlier green runs are listed in `docs/PROJECT_STATUS.md`.
