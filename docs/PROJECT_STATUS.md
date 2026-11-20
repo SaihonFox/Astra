@@ -132,6 +132,8 @@
   [44468595677](https://github.com/SaihonFox/Astra/actions/runs/44468595677).
 - CI green on Ubuntu and Windows for the project handoff and refreshed status docs: run
   [44471553581](https://github.com/SaihonFox/Astra/actions/runs/44471553581).
+- CI green on Ubuntu and Windows after fixing failure reporting and serializing ModelHost
+  tests: run [44686114240](https://github.com/SaihonFox/Astra/actions/runs/44686114240).
 - Known flake: Windows failed twice on commits that changed no product code — runs
   [44464834270](https://github.com/SaihonFox/Astra/actions/runs/44464834270) and
   [44471882692](https://github.com/SaihonFox/Astra/actions/runs/44471882692). The failing test
