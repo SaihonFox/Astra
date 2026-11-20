@@ -1,21 +1,22 @@
 # Stage 3 — Model Runtime Report
 
-- **Status:** Draft — awaiting phase 3.6 hardware validation on the owner's Windows laptop
-- **Draft prepared:** 2026-11-20
-- **Environment:** Ubuntu 26.04, 4 vCPU, 7.6 GB RAM, no GPU, .NET SDK 10.0.115; GitHub Actions
-  `ubuntu-latest` and `windows-latest`
-- **Code commit verified:** `acfb463` (all inference, IPC and supervision code)
+- **Status:** Signed off by the project owner on 2026-11-20
+- **Draft prepared:** 2026-11-20; hardware validation added and signed off 2026-11-20
+- **Environment:** Windows 10 22H2 (19045), Ryzen 5 4600H, 7.4 GB RAM, GTX 1650 4 GB,
+  .NET SDK 11.0.100 (ADR 0009); earlier evidence was produced on Ubuntu 26.04, 4 vCPU,
+  7.6 GB RAM, no GPU, .NET SDK 10.0.115; GitHub Actions `ubuntu-latest` and `windows-latest`
+- **Code commit verified:** `acfb463` for the inference, IPC and supervision code; the working
+  copy additionally contains the .NET 11 baseline (ADR 0009) and this hardware validation, and
+  is not yet committed or pushed (the folder is not a git clone).
 - **CI runs:** [44688730382](https://github.com/SaihonFox/Astra/actions/runs/44688730382)
   (code, Ubuntu and Windows green) and
   [44710009253](https://github.com/SaihonFox/Astra/actions/runs/44710009253) (documentation
-  snapshot, Ubuntu and Windows green)
+  snapshot, Ubuntu and Windows green); the run for this change set is pending a push.
 
-> **How to finish this report:** run section 1 (Windows CPU) and, optionally, section 2 (CUDA)
-> of [STAGE_3_HARDWARE_VALIDATION.md](STAGE_3_HARDWARE_VALIDATION.md), fill the tables in
-> [Hardware validation](#hardware-validation-to-be-completed-on-the-laptop), then change the
-> status to `Signed off`, update `docs/STAGE_3_MODEL_RUNTIME.md` and
-> `docs/PROJECT_STATUS.md`. Do not mark CUDA as working without a recorded run on the target
-> machine; a documented CPU fallback also satisfies the criterion.
+> **Status note:** the hardware validation below was executed on the owner's Windows laptop on
+> 2026-11-20. CUDA 12 is recorded as a documented CPU fallback, which satisfies criterion 6.
+> The owner signed Stage 3 off on 2026-11-20. The CI run for this change set is still pending a
+> push, because the working copy is not a git clone.
 
 ## Scope delivered
 
@@ -69,8 +70,8 @@
 | 2 | Migration is additive and does not modify the Stage 2 schema | Met | `DatabaseMigratorTests`; migration 2 adds only `models` |
 | 3 | Fake runtime passes load/unload/generate/cancellation contract tests | Met | `LocalModelRuntimeContractTests` (12 tests) |
 | 4 | ModelHost starts on demand, negotiates protocol, shuts down gracefully | Met | 26 ModelHost tests; Unix socket here, named pipe in Windows CI |
-| 5 | Real GGUF model loads and generates on CPU on Linux and Windows | **Linux met, Windows pending** | Linux: section below; Windows: hardware runbook, section 1 |
-| 6 | CUDA offload works on the GTX 1650 or is documented unavailable with CPU fallback | **Pending** | Opt-in restore/build verified here; GPU execution requires the laptop |
+| 5 | Real GGUF model loads and generates on CPU on Linux and Windows | Met | Linux: section below; Windows: hardware section (`Qwen3-0.6B-Q8_0`, load 1.2 s, 8 tokens in 0.6 s, 1024-dim embeddings) |
+| 6 | CUDA offload works on the GTX 1650 or is documented unavailable with CPU fallback | Met via documented fallback | CUDA 12 build restored and ran; driver 457.49 / CUDA 11.1 and no toolkit → `GPU offload supported: False`, explicit "no usable GPU" warning, CPU fallback passed |
 | 7 | Host stays responsive and recovers when ModelHost crashes or is killed | Met at library level | `ModelHostSupervisorTests`: kill, restart, reload, unload semantics |
 | 8 | CI green on Ubuntu and Windows without models or GPU | Met | Runs 44688730382 and 44710009253 |
 | 9 | Documentation and status reflect behavior and limitations | Met | This report, stage plan, status, handoff, IPC and hardware docs |
@@ -83,7 +84,19 @@ Stage 4 integration.
 
 ### Build, tests, formatting
 
-Local Ubuntu 26.04, SDK 10.0.115:
+Windows 10 22H2, Ryzen 5 4600H, 7.4 GB RAM, SDK 11.0.100 (`net11.0`, C# 15, ADR 0009):
+
+```
+dotnet restore AstraAgent.slnx --locked-mode                  → succeeded
+dotnet build AstraAgent.slnx --no-restore -c Release          → succeeded, 0 warnings
+dotnet test AstraAgent.slnx --no-build -c Release             → 85 passed, 0 failed
+dotnet format AstraAgent.slnx --verify-no-changes             → exit 0
+```
+
+Host smoke test on Windows with a temporary data root: `GET /health` returned 200 "Healthy";
+`database/`, `ipc/` and `logs/` were created.
+
+Local Ubuntu 26.04, SDK 10.0.115 (historical, before the .NET 11 baseline change):
 
 ```
 dotnet restore AstraAgent.slnx --locked-mode                  → succeeded
@@ -155,81 +168,96 @@ run-level errors and a 200-line log tail to the step summary, emits failed test 
 messages as error annotations, and uses `if: failure()` so the reporting step runs after any
 earlier failure. This made the diagnosis possible without authenticated access to job logs.
 
-## Hardware validation (to be completed on the laptop)
+## Hardware validation (Windows laptop)
 
-Follow [STAGE_3_HARDWARE_VALIDATION.md](STAGE_3_HARDWARE_VALIDATION.md). Record facts, not
-impressions; leave a section explicitly marked "not run" if it was skipped.
+Performed on 2026-11-20 following
+[STAGE_3_HARDWARE_VALIDATION.md](STAGE_3_HARDWARE_VALIDATION.md).
 
 ### Windows CPU
 
 Commands:
 
 ```powershell
-git clone https://github.com/SaihonFox/Astra.git
-cd Astra
 dotnet restore AstraAgent.slnx --locked-mode
 dotnet build AstraAgent.slnx --no-restore -c Release
 dotnet test AstraAgent.slnx --no-build -c Release
 dotnet format AstraAgent.slnx --verify-no-changes
 
-$env:ASTRA_TEST_MODEL = "C:\models\<model>.gguf"
+$env:ASTRA_TEST_MODEL = "C:\models\Qwen3-0.6B-Q8_0.gguf"
 $env:ASTRA_TEST_GPU_LAYERS = "0"
-dotnet test tests/Astra.ModelHost.Tests -c Release `
+dotnet test tests/Astra.ModelHost.Tests -c Release --no-build `
   --filter "Category=Hardware" --logger "console;verbosity=detailed"
 ```
 
 | Item | Result |
 |---|---|
-| Windows version / build | `<fill in>` |
-| CPU / RAM | `<fill in>` |
-| .NET SDK | `<fill in>` |
-| Model file / quantization / license / source | `<fill in>` |
-| Context window | `<fill in>` |
-| Load time | `<fill in>` |
-| Generation (chunks, tokens, seconds) | `<fill in>` |
-| Embedding dimensions and time | `<fill in>` |
-| `GPU offload supported` line | expected `False`, layers `0` — `<fill in>` |
-| Suite result (85 tests) | `<fill in>` |
-| CI run for the validated commit | `<fill in>` |
+| Windows version / build | Windows 10 22H2, 10.0.19045 |
+| CPU / RAM | AMD Ryzen 5 4600H (6C/12T) / 7.4 GB usable |
+| GPU | NVIDIA GeForce GTX 1650 4 GB, driver 457.49 (CUDA 11.1) |
+| .NET SDK | 11.0.100 (`net11.0`, C# 15, ADR 0009) |
+| Model file / quantization / license / source | `Qwen3-0.6B-Q8_0.gguf`, 639,446,688 bytes (Q8_0), Apache-2.0, `Qwen/Qwen3-0.6B-GGUF` on Hugging Face |
+| Context window | 512 |
+| Load time | 1.2 s |
+| Generation (chunks, tokens, seconds) | 8 chunks, 37 characters, 0.6 s |
+| Embedding dimensions and time | 1024 dimensions, 0.2 s |
+| `GPU offload supported` line | `GPU offload supported: False; requested GPU layers: 0.` |
+| Suite result (85 tests) | 85 passed, 0 failed, 0 skipped |
+| CI run for the validated commit | not available — the working copy is not a git clone; CI runs on the next push |
 
-Acceptance: the hardware test passes, the suite is green, and the log shows the CPU fallback
-line. If embedding fails because the model lacks support, record it and note that generation
-passed.
+The hardware test `RealModelHardwareTests.RealModelLoadsGeneratesAndEmbeds` passed in 3 s and
+reported `load: 1.2 s, gpu layers: 0`, `generate: 8 chunks, 37 characters, 0.6 s`,
+`embed: 1024 dimensions, 0.2 s`. llama.cpp logged two benign warnings: Qwen3 marks `</s>` as
+a control-looking token, and embeddings required overriding non-output input tokens. Both are
+model-metadata notes, not failures.
 
 ### CUDA 12 on the GTX 1650 (optional)
 
-Prerequisites: NVIDIA driver plus the **CUDA 12 toolkit** (`CUDA_PATH`), free disk for ~500 MB
-of packages and ~1.2 GB of build output, and a model that fits in 4 GB VRAM.
+Result: **CUDA 12 backend restored and built, but no usable GPU was found at runtime; the run
+fell back to CPU and the test passed. Criterion 6 is met through the documented fallback.**
+
+Command:
 
 ```powershell
-$env:ASTRA_TEST_MODEL = "C:\models\<model>.gguf"
+$env:ASTRA_TEST_MODEL = "C:\models\Qwen3-0.6B-Q8_0.gguf"
 $env:ASTRA_TEST_GPU_LAYERS = "99"
 dotnet test tests/Astra.ModelHost.Tests -c Release -p:UseCuda=true `
   --filter "Category=Hardware" --logger "console;verbosity=detailed"
-# second terminal while it runs:
-nvidia-smi
-git status --short   # the committed packages.lock.json must be unchanged
+```
+
+Runtime log:
+
+```
+[INF] GPU offload supported: False; requested GPU layers: 99.
+[WRN] GPU layers were requested but the native backend has no usable GPU; inference will use the CPU.
+load: 1.7 s, gpu layers: 99
+generate: 8 chunks, 37 characters, 0.5 s
+embed: 1024 dimensions, 0.2 s
 ```
 
 | Item | Result |
 |---|---|
-| NVIDIA driver / CUDA toolkit version | `<fill in>` |
-| Working `ASTRA_TEST_GPU_LAYERS` | `<fill in>` |
-| `GPU offload supported` line | must be `True` for a successful GPU run — `<fill in>` |
-| Load / generation time | `<fill in>` |
-| VRAM used per `nvidia-smi` | `<fill in>` |
-| `git status` after the CUDA build | expected: no lock-file change — `<fill in>` |
-| OR: CUDA failure and CPU fallback evidence | `<fill in>` |
+| NVIDIA driver / CUDA toolkit version | driver 457.49 (CUDA 11.1 runtime); no CUDA 12 toolkit (`CUDA_PATH` unset, `C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA` absent) |
+| Working `ASTRA_TEST_GPU_LAYERS` | none — 99 was requested and ignored with an explicit warning |
+| `GPU offload supported` line | `False`; warning that the native backend has no usable GPU |
+| Load / generation time | 1.7 s / 0.5 s for 8 tokens (CPU execution) |
+| VRAM used per `nvidia-smi` | 134 MiB idle; no ModelHost allocation observed |
+| `git status` after the CUDA build | committed `src/Astra.ModelHost/packages.lock.json` still lists only `LLamaSharp.Backend.Cpu`; the CUDA restore writes `obj/packages.cuda.lock.json` (ignored). Verified by inspecting both files — the working copy has no `.git`. |
+| OR: CUDA failure and CPU fallback evidence | as above: opt-in restore/build succeeded, runtime reported no usable GPU and used the CPU |
 
-If CUDA cannot be used (driver/toolkit/package mismatch, OOM with the model), record the exact
-error, rerun the CPU procedure and state "CUDA unavailable on this machine; CPU fallback
-validated". That satisfies criterion 6. Do not claim CUDA works without the recorded evidence
-above.
+The CUDA 12 backend needs a driver from the 525/527 branch or newer plus the CUDA 12 toolkit
+for `cudart64_12.dll` and `cublas64_12.dll`. This machine has neither, so LLamaSharp selected
+the CPU path. Installing a newer driver and the toolkit requires administrator rights and a
+reboot and is left to the owner as a separate task.
+
+After the CUDA run the ModelHost `bin`/`obj` were removed, the solution was restored with
+`--locked-mode` and rebuilt: the output contains no CUDA native libraries and all 85 tests
+pass, so the repository stays on the CPU baseline.
 
 ## Known limitations
 
-- Windows CPU inference and CUDA offload are not validated yet; they are the only open Stage 3
-  acceptance criteria.
+- CUDA offload is not usable on the GTX 1650: the opt-in CUDA 12 build restores and runs, but
+  with driver 457.49 and no CUDA 12 toolkit LLamaSharp reports no usable GPU and falls back to
+  the CPU. GPU acceleration remains an owner task that needs a driver update and the toolkit.
 - `Astra.Host` does not start ModelHost. Wiring the supervisor into the host, and preventing an
   orphaned ModelHost after a host crash with a job object/watchdog, is Stage 4 work.
 - Central log redaction is not implemented. Prompts, completions, file contents and user data
@@ -246,13 +274,14 @@ above.
 
 ## Remaining work to close Stage 3
 
-1. Run the Windows CPU validation and record the table above.
-2. Attempt CUDA 12 on the GTX 1650; record success evidence or the documented fallback.
-3. Fill this report, set the status to `Signed off` and update the phase table in
-   [STAGE_3_MODEL_RUNTIME.md](STAGE_3_MODEL_RUNTIME.md).
-4. Update `docs/PROJECT_STATUS.md`, `docs/ROADMAP.md` and `README.md` with the final status.
-5. Push the final commit and record its green CI run on Ubuntu and Windows.
-6. Obtain owner sign-off before starting Stage 4 — Agent Core, including the Policy Engine,
+Done on 2026-11-20: Windows CPU validation recorded; CUDA documented as unavailable with the
+CPU fallback; report filled; .NET 11 baseline verified.
+
+1. Commit the change set and record its green CI run on Ubuntu and Windows (requires a git
+   clone; the current working copy has no `.git`).
+2. Set the phase table in [STAGE_3_MODEL_RUNTIME.md](STAGE_3_MODEL_RUNTIME.md) to complete.
+3. Update `docs/PROJECT_STATUS.md`, `docs/ROADMAP.md` and `README.md` with the final status.
+4. Obtain owner sign-off before starting Stage 4 — Agent Core, including the Policy Engine,
    which requires explicit approval.
 
 ## References

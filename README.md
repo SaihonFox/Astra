@@ -2,11 +2,11 @@
 
 [![CI](https://github.com/SaihonFox/Astra/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/SaihonFox/Astra/actions/workflows/ci.yml)
 
-**Статус:** Этапы 0–2 завершены; Этап 3 — Model Runtime в работе (остались проверка на оборудовании владельца и отчёт этапа)
+**Статус:** Этапы 0–3 завершены и подписаны; Этап 4 — Agent Core в планировании (план и ADR на утверждении владельца)
 **Основная платформа:** Windows  
 **Дополнительная платформа:** Linux  
 **Клиент:** Android  
-**Язык основной платформы:** C# / .NET 10  
+**Язык основной платформы:** C# / .NET 11  
 **Desktop:** Avalonia UI  
 **Inference:** llama.cpp / GGUF
 
@@ -20,9 +20,9 @@ Astra Agent — персональный автономный локальный
 
 ## Текущее состояние
 
-Каркас Foundation, базовая инфраструктура и рантайм локальных моделей: solution `AstraAgent.slnx`, хост `Astra.Host`, SQLite с миграциями, in-process event bus, настройки, реестр моделей, Serilog-логирование, health check и CI для Linux/Windows. `Astra.ModelHost` запускает llama.cpp через LLamaSharp в отдельном процессе (Named Pipe на Windows, Unix Socket на Linux), поддерживает загрузку GGUF, потоковую генерацию, эмбеддинги, лимиты и перезапуск после падения. Реальная генерация проверена на Linux CPU; проверка на Windows и CUDA ожидает оборудования владельца. Agent Core, память, инструменты и Policy Engine ещё не реализованы.
+Каркас Foundation, базовая инфраструктура и рантайм локальных моделей: solution `AstraAgent.slnx`, хост `Astra.Host`, SQLite с миграциями, in-process event bus, настройки, реестр моделей, Serilog-логирование, health check и CI для Linux/Windows. Проект собирается на .NET 11 (ADR 0009). `Astra.ModelHost` запускает llama.cpp через LLamaSharp в отдельном процессе (Named Pipe на Windows, Unix Socket на Linux), поддерживает загрузку GGUF, потоковую генерацию, эмбеддинги, лимиты и перезапуск после падения. Реальная генерация и эмбеддинги проверены на Linux CPU и на Windows CPU (Qwen3-0.6B-Q8_0). CUDA 12 на GTX 1650 недоступна: драйвер 457.49 и нет CUDA 12 toolkit — зафиксирован CPU fallback. Agent Core, память, инструменты и Policy Engine ещё не реализованы.
 
-Проверено на .NET SDK 10.0.115 (Ubuntu 26.04):
+Проверено на .NET SDK 11.0.100 (Windows 10 22H2 и Ubuntu 26.04):
 
 ```bash
 dotnet restore AstraAgent.slnx --locked-mode
@@ -53,7 +53,8 @@ MIT — см. [LICENSE](LICENSE). Сторонние зависимости и �
 - [Отчёт Stage 2 — Core Infrastructure](docs/STAGE_2_CORE_INFRASTRUCTURE_REPORT.md)
 - [План Stage 3 — Model Runtime](docs/STAGE_3_MODEL_RUNTIME.md)
 - [Проверка этапа 3 на оборудовании](docs/STAGE_3_HARDWARE_VALIDATION.md)
-- [Отчёт Stage 3 — Model Runtime (черновик)](docs/STAGE_3_MODEL_RUNTIME_REPORT.md)
+- [Отчёт Stage 3 — Model Runtime](docs/STAGE_3_MODEL_RUNTIME_REPORT.md)
+- [План Stage 4 — Agent Core](docs/STAGE_4_AGENT_CORE.md)
 - [Навыки агентов](skills/README.md)
 
 ## Правило начала работ

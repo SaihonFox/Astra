@@ -1,8 +1,9 @@
 # Stage 3 — Model Runtime
 
-- **Status:** In progress — remaining: Windows CPU / CUDA validation and report sign-off
+- **Status:** Signed off by the owner on 2026-11-20
 - **Started:** 2026-11-18
-- **Report:** [STAGE_3_MODEL_RUNTIME_REPORT.md](STAGE_3_MODEL_RUNTIME_REPORT.md) (draft prepared 2026-11-20)
+- **Report:** [STAGE_3_MODEL_RUNTIME_REPORT.md](STAGE_3_MODEL_RUNTIME_REPORT.md) (hardware
+  validation recorded 2026-11-20)
 - **Depends on:** Stage 2 — Core Infrastructure (completed)
 
 ## Goal
@@ -50,17 +51,19 @@ yet decide which model to use; it will consume this runtime in Stage 4.
 | 3.2 | Model registry (schema, store, tests) | Completed |
 | 3.3 | Runtime contract and fake runtime | Completed |
 | 3.4 | ModelHost process and IPC contract | Completed |
-| 3.5 | LLamaSharp adapter and CPU backend | Completed on Linux CPU; Windows CPU validation pending |
-| 3.6 | Optional CUDA 12 backend on target hardware | Pending owner hardware; runbook ready |
+| 3.5 | LLamaSharp adapter and CPU backend | Completed; validated on Linux and Windows CPU |
+| 3.6 | Optional CUDA 12 backend on target hardware | CUDA build restores and runs; no usable GPU (driver 457.49, no CUDA 12 toolkit), CPU fallback validated |
 | 3.7 | Resource admission and supervision | Completed |
-| 3.8 | Stage report and CI verification | Draft prepared 2026-11-20; awaiting 3.6 results |
+| 3.8 | Stage report and CI verification | Report completed 2026-11-20; CI run pending the next push |
 
-## Environment facts (2026-11-18)
+## Environment facts (2026-11-18, updated 2026-11-20)
 
-- Current development environment: Ubuntu 26.04, 4 vCPU AMD EPYC, 7.6 GB RAM, **no NVIDIA
-  GPU**. GPU-specific validation must run on the owner's Windows machine.
-- Target hardware: Windows, GTX 1650 4 GB (Turing, compute capability 7.5), 16 GB RAM.
-- LLamaSharp 0.30.0 targets `net10.0`; CPU and CUDA12 backends are MIT.
+- Development environments: Ubuntu 26.04, 4 vCPU AMD EPYC, 7.6 GB RAM, no NVIDIA GPU; and the
+  owner's Windows 10 22H2 laptop, Ryzen 5 4600H, 7.4 GB RAM, GTX 1650 4 GB (driver 457.49,
+  CUDA 11.1 runtime, no CUDA 12 toolkit). SDK 11.0.100 (ADR 0009).
+- Target hardware: Windows, GTX 1650 4 GB (Turing, compute capability 7.5).
+- LLamaSharp 0.30.0 ships a `net10.0` target and runs on `net11.0` (ADR 0009); CPU and CUDA12
+  backends are MIT.
 - Windows CPU and CUDA checks are described in
   [STAGE_3_HARDWARE_VALIDATION.md](STAGE_3_HARDWARE_VALIDATION.md). CUDA is opt-in with
   `-p:UseCuda=true` and is not part of the default build, lock file or CI. The opt-in restore

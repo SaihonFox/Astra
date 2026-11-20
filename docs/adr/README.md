@@ -27,3 +27,8 @@ approval for changes that affect the product specification.
 | [0006](0006-persistence-sqlite.md) | Persistence baseline — SQLite, migrations, settings | Accepted |
 | [0007](0007-in-process-eventing.md) | In-process eventing | Accepted |
 | [0008](0008-model-runtime-strategy.md) | Local model runtime strategy | Accepted |
+| [0009](0009-dotnet-11-baseline.md) | .NET 11 platform baseline | Accepted |
+| [0010](0010-task-state-and-checkpoints.md) | Task state, sessions and checkpoints | Proposed |
+| [0011](0011-model-orchestration.md) | Model orchestration and selection | Proposed |
+| [0012](0012-context-assembly.md) | Context assembly and budgeting | Proposed |
+| [0013](0013-policy-engine-and-audit.md) | Policy Engine, permissions and audit | Proposed |

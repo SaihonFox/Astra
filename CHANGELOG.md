@@ -3,6 +3,14 @@
 ## Unreleased
 
 ### Added
+- Stage 4 planning: `docs/STAGE_4_AGENT_CORE.md` and proposed ADRs 0010–0013 (task state,
+  model orchestration, context assembly, Policy Engine and audit). No Stage 4 code yet.
+- Stage 3 hardware validation and sign-off:
+  - Windows CPU run with `Qwen3-0.6B-Q8_0.gguf`: load 1.2 s, 8 tokens in 0.6 s, 1024-dim
+    embeddings in 0.2 s, `GPU offload supported: False`;
+  - CUDA 12 opt-in build restores and runs but reports no usable GPU (driver 457.49, no CUDA 12
+    toolkit); CPU fallback validated and recorded;
+  - Stage 3 report signed off by the owner on 2026-11-20.
 - Stage 3 model registry:
   - `Astra.Core` model contracts and validation (`ModelDescriptor`, capabilities, test
     status, availability, `IModelRegistry`);
@@ -30,6 +38,10 @@
 - `docs/STAGE_2_CORE_INFRASTRUCTURE_REPORT.md` (signed off).
 
 ### Changed
+- Platform baseline moved to **.NET 11** (ADR 0009): `net11.0`, C# 15, SDK 11.0.100 in
+  `global.json`, `Microsoft.Data.Sqlite` and `Microsoft.AspNetCore.Mvc.Testing` 11.0.0,
+  lock files regenerated, CI sets up `11.0.x`. Verified on Windows 10 22H2 with SDK 11.0.100:
+  locked restore, build with 0 warnings, 85 tests, format exit 0, host `/health` healthy.
 - Stage 3 — Model Runtime in progress; model registry completed, runtime not started.
 - Stage 2 — Core Infrastructure completed and signed off; ADRs 0006/0007 accepted.
 - CI verified green on Ubuntu and Windows for the Stage 2 commit (run 44348269884).

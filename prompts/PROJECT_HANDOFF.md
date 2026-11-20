@@ -6,8 +6,8 @@
 > to do next. Read it after `AGENTS.md` and before changing code.
 >
 > **Snapshot:** 2026-11-20, repository `SaihonFox/Astra`, branch `master`. The snapshot was
-> refreshed after commit `acfb463`; always confirm the actual commit with `git log -1` and the
-> working tree with `git status`.
+> refreshed after the Stage 3 hardware validation and the .NET 11 baseline change; always
+> confirm the actual commit with `git log -1` and the working tree with `git status`.
 
 ---
 
@@ -16,23 +16,29 @@
 **Что готово**
 
 - Этапы 0–2 завершены и подписаны.
-- Этап 3 (Model Runtime) почти завершён: реестр моделей, контракт runtime, отдельный процесс
-  `Astra.ModelHost` с gRPC по Named Pipe/Unix Socket, адаптер LLamaSharp для CPU, надзор за
-  процессом и базовые лимиты реализованы и покрыты тестами.
-- Локально на Linux проверена реальная генерация и эмбеддинги на Qwen3-4B-Q4_K_M.
+- Этап 3 (Model Runtime) завершён и **подписан владельцем 2026-11-20**: реестр моделей,
+  контракт runtime, отдельный процесс `Astra.ModelHost` с gRPC по Named Pipe/Unix Socket,
+  адаптер LLamaSharp для CPU, надзор за процессом и базовые лимиты реализованы и покрыты
+  тестами.
+- Реальная генерация и эмбеддинги проверены на Linux CPU (Qwen3-4B-Q4_K_M) и на Windows CPU
+  (Qwen3-0.6B-Q8_0). CUDA 12 собирается, но на GTX 1650 недоступна (драйвер 457.49, нет
+  CUDA 12 toolkit) — зафиксирован CPU fallback.
+- Платформа переведена на .NET 11 (ADR 0009): `net11.0`, C# 15, SDK 11.0.100.
+- Этап 4 (Agent Core) — на этапе планирования: `docs/STAGE_4_AGENT_CORE.md` и ADR 0010–0013
+  предложены, код ещё не написан.
 
-**Что осталось до завершения этапа 3**
+**Что осталось до старта этапа 4**
 
-1. Проверить CPU-инференс на Windows (ноутбук владельца).
-2. Проверить CUDA 12 на GTX 1650 (опционально; при невозможности — зафиксировать CPU fallback).
-3. Написать отчёт этапа 3.8, обновить статус и получить зелёный CI.
+1. Утвердить ADR 0010–0013 (особенно 0013 — Policy Engine, security-critical).
+2. Закоммитить изменения из настоящего git-клона (в текущей папке нет `.git`) и получить
+   зелёный CI на Ubuntu и Windows.
 
 **С чего начать на ноутбуке**
 
 ```powershell
 git clone https://github.com/SaihonFox/Astra.git
 cd Astra
-dotnet --version                      # нужен SDK 10.0.1xx
+dotnet --version                      # нужен SDK 11.0.1xx (ADR 0009)
 dotnet restore AstraAgent.slnx --locked-mode
 dotnet build AstraAgent.slnx --no-restore -c Release
 dotnet test AstraAgent.slnx --no-build -c Release
@@ -84,8 +90,8 @@ started and needs a plan and ADRs before implementation.
 | Stage 0 — specification | Completed, owner-approved 2026-11-18 |
 | Stage 1 — Foundation | Completed, report signed off |
 | Stage 2 — Core Infrastructure | Completed, report signed off; ADR 0006/0007 accepted |
-| Stage 3 — Model Runtime | In progress: phases 3.1–3.5 and 3.7 implemented; 3.6 pending owner hardware; 3.8 pending |
-| Stage 4 — Agent Core | Not started; Policy Engine requires owner approval |
+| Stage 3 — Model Runtime | Completed and signed off 2026-11-20: Windows CPU validated; CUDA 12 built but no usable GPU, CPU fallback documented |
+| Stage 4 — Agent Core | Planning: `docs/STAGE_4_AGENT_CORE.md` and ADRs 0010–0013 proposed; implementation awaits approval |
 
 Stage 3 details:
 
@@ -112,7 +118,7 @@ Ubuntu and Windows without models or GPU.
 ```
 AGENTS.md                       mandatory working rules (Russian)
 AstraAgent.slnx                 solution
-global.json                     SDK 10.0.1xx band, rollForward latestFeature
+global.json                     SDK 11.0.1xx band, rollForward latestFeature (ADR 0009)
 Directory.Build.props           nullable, analyzers, warnings-as-errors, deterministic build
 Directory.Packages.props        central package versions incl. LLamaSharp 0.30.0
 src/Astra.Core/                 contracts only (no infrastructure, no LLamaSharp)
@@ -215,7 +221,19 @@ Key facts:
 
 ## 5. Verification and evidence
 
-Local environment (this snapshot), Ubuntu 26.04, 4 vCPU, 7.6 GB RAM, no GPU, SDK 10.0.115:
+Windows 10 22H2 (build 19045), Ryzen 5 4600H, 7.4 GB RAM, GTX 1650 4 GB, SDK 11.0.100
+(ADR 0009), 2026-11-20:
+
+```
+dotnet restore AstraAgent.slnx --locked-mode                  → succeeded
+dotnet build AstraAgent.slnx --no-restore -c Release          → 0 warnings, 0 errors
+dotnet test AstraAgent.slnx --no-build -c Release             → 85 passed, 0 failed, 0 skipped
+dotnet format AstraAgent.slnx --verify-no-changes             → exit 0
+dotnet run --project src/Astra.Host (temp data root)          → GET /health 200 "Healthy"
+```
+
+Earlier Linux environment (Stage 1–3 evidence, before the .NET 11 change), Ubuntu 26.04,
+4 vCPU, 7.6 GB RAM, no GPU, SDK 10.0.115:
 
 ```
 dotnet restore AstraAgent.slnx --locked-mode                  → succeeded
@@ -237,6 +255,24 @@ generate 16 tokens            3.9 s
 embeddings, 1 input           0.6 s, 2560 dimensions
 unload                        graceful, process exits
 ```
+
+Real-model validation on Windows CPU with `Qwen3-0.6B-Q8_0.gguf` (Apache-2.0, Hugging Face
+`Qwen/Qwen3-0.6B-GGUF`, 639,446,688 bytes, context 512, 2026-11-20):
+
+```
+GPU offload supported: False; requested GPU layers: 0.
+load                          1.2 s
+generate 8 tokens             0.6 s (8 chunks, 37 characters)
+embeddings, 1 input           0.2 s, 1024 dimensions
+```
+
+CUDA 12 attempt on the same machine (`ASTRA_TEST_GPU_LAYERS=99`, `-p:UseCuda=true`): the CUDA
+backend restores and builds, but the runtime logs
+`GPU offload supported: False; requested GPU layers: 99.` and
+`GPU layers were requested but the native backend has no usable GPU; inference will use the
+CPU.` Reason: driver 457.49 (CUDA 11.1) and no CUDA 12 toolkit. The test passes on the CPU
+fallback (load 1.7 s, 8 tokens in 0.5 s). The committed CPU lock file is unchanged; the CUDA
+restore writes `obj/packages.cuda.lock.json`. This satisfies acceptance criterion 6.
 
 Hardware test (trait `Hardware`, skipped unless `ASTRA_TEST_MODEL` is set):
 
@@ -278,7 +314,10 @@ asks. Each step ends with recorded commands/results, updated docs and a green CI
 
 ### 6.1 Phase 3.6 — Windows CPU validation (owner's laptop)
 
-1. Install .NET SDK 10.0.1xx and Git; clone the repository.
+**Done on 2026-11-20** with `Qwen3-0.6B-Q8_0.gguf` on Windows 10 22H2; results are recorded in
+section 5 and in the Stage 3 report. The procedure below is kept for future re-validation.
+
+1. Install .NET SDK 11.0.1xx and Git; clone the repository.
 2. Run the full local verification from section 5 on Windows and record the output.
 3. Obtain a GGUF model locally. The model used for Linux validation was Qwen3-4B-Q4_K_M
    (~2.4 GB); verify its license before use and do not commit weights.
@@ -289,6 +328,11 @@ Acceptance: the hardware test passes on Windows CPU and the runtime logs
 `GPU offload supported: False; requested GPU layers: 0.`
 
 ### 6.2 Phase 3.6 — optional CUDA 12 validation on the GTX 1650
+
+**Attempted on 2026-11-20.** The CUDA build restores and runs, but the driver is 457.49
+(CUDA 11.1) and the CUDA 12 toolkit is absent, so LLamaSharp logs `GPU offload supported:
+False` plus "no usable GPU" and falls back to the CPU; the hardware test passes on the CPU.
+Re-run this procedure only after installing a 525/527-or-newer driver and the CUDA 12 toolkit.
 
 1. Install the NVIDIA driver and the **CUDA 12 toolkit** (the NuGet CUDA backend ships only
    llama.cpp libraries; `cudart64_12.dll` and `cublas64_12.dll` come from the toolkit, and
@@ -315,53 +359,44 @@ modification. Return to the normal CPU build with `dotnet restore AstraAgent.sln
 
 ### 6.3 Phase 3.8 — Stage 3 report and sign-off
 
-A draft of `docs/STAGE_3_MODEL_RUNTIME_REPORT.md` already exists (prepared 2026-11-20) with
-scope, acceptance criteria, Linux CPU evidence, the Windows flake analysis and CI history.
-Fill its hardware tables, then set the status to `Signed off`. The remaining sections to
-complete are:
+**Done on 2026-11-20**: hardware tables filled, CUDA fallback documented, .NET 11 baseline
+recorded, and the owner signed Stage 3 off. The only remaining administrative item is to commit
+this change set from a real git clone and record a green CI run on Ubuntu and Windows (the
+current working copy has no `.git`, so nothing was pushed).
 
-- Windows environment and OS build;
-- model name, quantization, license and source;
-- CPU and GPU (or fallback) timings;
-- the exact commands and their output;
-- CI run links for the final commit;
-- limitations that remain (Host wiring, orphan-process watchdog, log redaction).
+The report `docs/STAGE_3_MODEL_RUNTIME_REPORT.md` contains scope, acceptance criteria, Linux
+and Windows CPU evidence, the CUDA fallback, the Windows flake analysis and CI history. The
+following documents were updated for the final status: `docs/STAGE_3_MODEL_RUNTIME.md`,
+`docs/PROJECT_STATUS.md`, `docs/ROADMAP.md`, `README.md`, `CHANGELOG.md` and this handoff.
 
-Then update:
+### 6.4 Stage 4 — Agent Core (plan ready, awaiting ADR approval)
 
-- `docs/STAGE_3_MODEL_RUNTIME.md` (phase table and verification log);
-- `docs/PROJECT_STATUS.md` (status, counts, current work, not-yet-verified list);
-- `README.md` (current state);
-- `docs/ROADMAP.md` (Stage 3 statuses);
-- `docs/ARCHITECTURE.md` if the runtime description changes.
+`docs/STAGE_4_AGENT_CORE.md` now defines goals, scope, components, module layout, phases, data
+model, task lifecycle, orchestration, context assembly, policy, tests and exit criteria. Four
+ADRs are proposed:
 
-Ask the owner to sign off before starting Stage 4.
-
-### 6.4 Stage 4 — Agent Core (only after sign-off)
-
-Stage 4 has no detailed plan document yet. Derive it from
-`docs/FINAL_PRODUCT_SPECIFICATION.md` section 4: Request Analyzer, Intent Classifier, Context
-Manager, Model Orchestrator, Task Planner, Task Executor, Tool Dispatcher, Result Validator,
-Response Generator, Session Manager, Task State Engine and Policy Engine.
+- ADR 0010 — task state, sessions and checkpoints;
+- ADR 0011 — model orchestration and selection;
+- ADR 0012 — context assembly and budgeting;
+- ADR 0013 — Policy Engine, permissions and audit (security-critical).
 
 Rules for starting Stage 4:
 
-- Write `docs/STAGE_4_AGENT_CORE.md` with goals, scope, components, files, tests, exit
-  criteria and an explicit statement of what is out of scope.
-- Propose ADRs for task-state persistence, model orchestration/selection, context assembly and
-  the Policy Engine before implementing them.
-- The Policy Engine, permission model and audit trail are security-critical and require the
-  owner's explicit approval.
-- Wire `ModelHostSupervisor` into `Astra.Host` only as part of a concrete Agent Core
-  requirement, with a job object/watchdog so ModelHost cannot outlive a crashed host.
+- Obtain owner approval for ADRs 0010–0013 before writing code. ADR 0013 in particular requires
+  explicit approval of the permission model and audit design.
+- Implement in the phase order from the plan; each phase ends with tests and a green build.
+- Wire `ModelHostSupervisor` into `Astra.Host` only as part of phase 4.2, with a job
+  object/watchdog so ModelHost cannot outlive a crashed host.
 - Keep everything local: no cloud inference, no multi-agent delegation, no AI provider SDKs.
+- Do not add tools, memory, UI or autonomy in Stage 4; those are separate stages.
 
 ---
 
 ## 7. Setting up the Windows laptop
 
-1. Install Git and .NET SDK 10.0.1xx. Verify `dotnet --list-sdks` contains `10.0.x`;
-   `global.json` pins the `10.0.100` feature band with `rollForward: latestFeature`.
+1. Install Git and .NET SDK 11.0.1xx. Verify `dotnet --list-sdks` contains `11.0.x`;
+   `global.json` pins the `11.0.100` feature band with `rollForward: latestFeature`
+   (ADR 0009).
 2. Clone `https://github.com/SaihonFox/Astra.git` (the repository is public; use the owner's
    credentials only if pushing).
 3. From the repository root:
@@ -494,14 +529,16 @@ On the laptop use the owner's normal Git credentials instead.
 
 ## 10. Open questions for the owner
 
-1. When is Stage 3 considered signed off — after Windows CPU only, or after the CUDA attempt
-   (success or documented fallback)?
-2. Which GGUF model should be the standard validation model (name, quantization, license,
-   source) for future hardware runs?
-3. Which Stage 4 acceptance criteria matter most: task state/persistence, model
-   orchestration, or the Policy Engine skeleton?
-4. Should ModelHost be started by `Astra.Host` at Stage 4, or only when the first Agent Core
-   flow needs inference?
+1. **Resolved 2026-11-20:** Windows CPU plus a documented CUDA fallback is sufficient. The
+   hardware run is recorded; only owner sign-off and a green CI run for the commit remain.
+2. **Resolved 2026-11-20:** `Qwen3-0.6B-Q8_0.gguf` (Apache-2.0, `Qwen/Qwen3-0.6B-GGUF`) is
+   the recorded Windows validation model; `Qwen3-4B-Q4_K_M` stays the Linux reference. Keep
+   both out of the repository.
+3. **Resolved by the Stage 4 plan:** all three are in scope; the phase order is 4.1 contracts,
+   4.2 Host wiring, 4.3 persistence, 4.4 pipeline, 4.5 task state, 4.6 Policy Engine, 4.7 tests
+   and report.
+4. **Resolved by the Stage 4 plan:** `Astra.Host` starts ModelHost in phase 4.2 together with
+   the watchdog, before the pipeline needs inference, so the wiring is tested early.
 5. Preferred model storage location on Windows (data root `models/` vs a separate drive) for
    multi-GB files.
 6. Whether to add Windows-specific integration tests that run only locally (hardware tests
@@ -522,16 +559,15 @@ Read in this order:
 3. docs/FINAL_PRODUCT_SPECIFICATION.md
 4. docs/ROADMAP.md and docs/PROJECT_STATUS.md
 5. docs/ARCHITECTURE.md, docs/MODEL_HOST_IPC.md, docs/STAGE_3_MODEL_RUNTIME.md,
-   docs/STAGE_3_HARDWARE_VALIDATION.md
+   docs/STAGE_4_AGENT_CORE.md
 6. The relevant skills/*/SKILL.md
 
 Then:
 - run `git log -1` and `git status`, and summarize the actual state;
-- verify the toolchain (`dotnet --list-sdks`, `dotnet --version`);
+- verify the toolchain (`dotnet --list-sdks`, `dotnet --version`; SDK 11.0.1xx);
 - run restore --locked-mode, build, tests and format as documented;
-- do not implement Stage 4 before Stage 3 sign-off;
-- continue with phase 3.6 on this Windows machine using the hardware runbook, or phase 3.8
-  if hardware results are already recorded.
+- Stage 3 is signed off; Stage 4 is planned but ADRs 0010–0013 are still Proposed;
+- obtain owner approval for ADRs 0010–0013, then implement Stage 4 phase by phase.
 
 Rules: one agent, local models only, no cloud AI APIs, no multi-agent runtime. Security and
 permissions are outside the LLM. Do not claim checks passed unless you ran them. Update

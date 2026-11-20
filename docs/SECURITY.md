@@ -51,6 +51,18 @@ Untrusted content must be clearly separated from system policy and user intent. 
 
 Skills and knowledge can be versioned and tested. Core, permission engine, security policy, and trust roots cannot be modified autonomously. Updates must support validation and rollback.
 
+## Current state (2026-11-20)
+
+Stages 0–3 are signed off. The Policy Engine, permission model and audit trail are **not
+implemented yet**; they are designed in
+[ADR 0013](adr/0013-policy-engine-and-audit.md) (Proposed) and scheduled for Stage 4. Until
+they exist:
+
+- no tool can execute, and `Astra.Host` exposes only `/health`;
+- external content must not be treated as instructions anywhere in code;
+- prompts, completions, file contents and secrets must not be logged (central log redaction is
+  still pending).
+
 ## Security review
 
 Every new tool, extension interface, network endpoint, persistence feature, and update mechanism requires a threat review and tests.

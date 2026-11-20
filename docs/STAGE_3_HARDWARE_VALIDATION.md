@@ -12,7 +12,7 @@ CI never downloads models and never requires a GPU.
 
 ## Prerequisites
 
-- Windows 10/11 x64, .NET SDK 10.0.1xx (`dotnet --version`).
+- Windows 10/11 x64, .NET SDK 11.0.1xx (`dotnet --version`).
 - The repository at the commit under validation.
 - A GGUF model file with a known license and source. A 4B Q4_K_M model (2–3 GB) is a good
   fit for 16 GB RAM; a smaller model also validates the pipeline.

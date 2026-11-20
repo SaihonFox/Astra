@@ -1,9 +1,10 @@
 # Project Status
 
-**Current stage:** Stage 3 — Model Runtime (in progress)
+**Current stage:** Stage 4 — Agent Core (planning; implementation awaits ADR approval)
 **Specification:** approved by project owner on 2026-11-18
-**Implementation:** foundation and core infrastructure complete; model registry, runtime contract, ModelHost IPC, CPU inference and supervision implemented; Windows/CUDA validation and the stage report pending
-**Last updated:** 2026-11-19
+**Implementation:** foundation, core infrastructure and Stage 3 Model Runtime complete and
+signed off; Stage 4 Agent Core is in planning and needs ADR approval before implementation
+**Last updated:** 2026-11-20
 **Handoff:** [prompts/PROJECT_HANDOFF.md](../prompts/PROJECT_HANDOFF.md) — full state, evidence, next steps and pitfalls for a new agent or machine
 
 ## Completed
@@ -63,7 +64,11 @@
   [44348269884](https://github.com/SaihonFox/Astra/actions/runs/44348269884).
 - [Stage 2 report](STAGE_2_CORE_INFRASTRUCTURE_REPORT.md) signed off.
 
-### Stage 3 — Model Runtime (in progress)
+### Stage 3 — Model Runtime (completed, signed off 2026-11-20)
+- ADR 0009 accepted by the owner on 2026-11-20: platform baseline moved from .NET 10 to
+  **.NET 11** (`net11.0`, C# 15, SDK 11.0.100, `Microsoft.Data.Sqlite` 11.0.0,
+  `Microsoft.AspNetCore.Mvc.Testing` 11.0.0, lock files regenerated). Verified on Windows
+  with SDK 11.0.100: locked restore, build with 0 warnings, 85 tests, format exit 0.
 - ADR 0008 accepted by the owner on 2026-11-18: LLamaSharp as the llama.cpp integration
   inside a dedicated `Astra.ModelHost` process, CPU baseline and optional CUDA 12.
 - Model registry contracts in `Astra.Core`: `ModelDescriptor`, `ModelFormat`,
@@ -105,6 +110,16 @@
   - `--max-model-bytes` rejects oversized model files before native loading; context, token,
     prompt, embedding-batch and GPU-layer limits are enforced by shared validation.
 - Hardware validation:
+  - Windows CPU validated on the owner's laptop (Windows 10 22H2, Ryzen 5 4600H, 7.4 GB RAM,
+    GTX 1650): `Qwen3-0.6B-Q8_0.gguf` (Apache-2.0), context 512, load 1.2 s, 8 tokens in
+    0.6 s, 1024-dimension embeddings in 0.2 s; log shows
+    `GPU offload supported: False; requested GPU layers: 0.`
+  - CUDA 12 offload does not work on that machine: the opt-in CUDA build restores and runs, but
+    the runtime reports `GPU offload supported: False` and
+    `GPU layers were requested but the native backend has no usable GPU`, then uses the CPU.
+    Driver 457.49 (CUDA 11.1) and no CUDA 12 toolkit (`CUDA_PATH` unset) explain it. The CPU
+    fallback satisfies acceptance criterion 6; GPU acceleration needs a driver update and the
+    toolkit.
   - `RealModelHardwareTests` (trait `Hardware`) runs only when `ASTRA_TEST_MODEL` is set and
     is a no-op in CI; validated here on Linux CPU with Qwen3-4B-Q4_K_M.
   - CUDA 12 is an opt-in build (`-p:UseCuda=true`) and is not in the default build or lock
@@ -151,10 +166,24 @@
   `OperationCanceledException` when the caller cancels. ModelHost test collections are also
   serialized to reduce process-start contention, and the workflow publishes failed test names,
   TRX outcomes and a log tail without requiring authenticated job-log access.
-- Not yet verified: CPU inference on Windows, CUDA offload on the GTX 1650, and Host-side
-  wiring of the supervisor.
+- [Stage 3 report](STAGE_3_MODEL_RUNTIME_REPORT.md) signed off by the owner on 2026-11-20.
+- Not yet verified: CI for the .NET 11 change set (the working copy is not a git clone; CI runs
+  on the next push) and Host-side wiring of the supervisor (Stage 4). CUDA offload is
+  documented as unavailable with the validated CPU fallback.
 
 ## Verification performed
+
+Windows 10 22H2 (19045), Ryzen 5 4600H, 7.4 GB RAM, SDK 11.0.100, 2026-11-20:
+
+```
+dotnet restore AstraAgent.slnx --locked-mode                  → succeeded
+dotnet build AstraAgent.slnx --no-restore -c Release          → 0 warnings, 0 errors
+dotnet test AstraAgent.slnx --no-build -c Release             → 85 passed, 0 failed, 0 skipped
+dotnet format AstraAgent.slnx --verify-no-changes             → exit 0
+```
+
+Host smoke test with a temporary data root on Windows: `GET /health` returned 200 "Healthy";
+the database, `ipc` and log areas were created as expected.
 
 Local environment, 2026-11-19, Ubuntu 26.04, SDK 10.0.115:
 
@@ -196,26 +225,32 @@ GitHub Actions run 44345679716 — **success** (Stage 1 commit):
 
 ## Current work
 
-Stage 3 — Model Runtime, phase 3.6: validate CPU inference on Windows and CUDA offload on the
-GTX 1650 using [STAGE_3_HARDWARE_VALIDATION.md](STAGE_3_HARDWARE_VALIDATION.md). These require
-the owner's machine. The draft [Stage 3 report](STAGE_3_MODEL_RUNTIME_REPORT.md) is prepared
-with scope, acceptance criteria, Linux CPU evidence, the Windows flake analysis and CI history;
-its hardware tables and the final sign-off remain. ModelHost is not yet started by
-`Astra.Host`; it will be wired in Stage 4.
+Stage 4 — Agent Core is in planning. [STAGE_4_AGENT_CORE.md](STAGE_4_AGENT_CORE.md) defines
+the components, phases, data model, tests and exit criteria. Four ADRs are proposed and need
+owner approval before implementation:
 
-Real-model and GPU validation must run on the target Windows machine with the GTX 1650.
-Policy Engine remains Stage 4 and requires owner approval. A new agent should start from
+- ADR 0010 — task state, sessions and checkpoints;
+- ADR 0011 — model orchestration and selection;
+- ADR 0012 — context assembly and budgeting;
+- ADR 0013 — Policy Engine, permissions and audit (security-critical).
+
+No Stage 4 code has been written. ModelHost is still not started by `Astra.Host`; wiring the
+supervisor together with a job object/watchdog is part of Stage 4 phase 4.2.
+
+Stage 3 is signed off. The only outstanding administrative item is committing this change set
+from a real git clone and recording a green CI run on Ubuntu and Windows; the current working
+copy has no `.git`. A new agent should start from
 [prompts/PROJECT_HANDOFF.md](../prompts/PROJECT_HANDOFF.md).
 
 ## Not yet implemented
 
 Agent Core, model orchestration and context assembly, memory, tools, Policy Engine and audit,
 API surface, desktop UI, Android client, extensions and learning. `Astra.Host` does not start
-ModelHost yet; supervision is a tested client library waiting for Stage 4 wiring. Windows CPU
-inference and CUDA offload on the GTX 1650 are not validated yet.
+ModelHost yet; supervision is a tested client library waiting for Stage 4 wiring. CUDA offload
+on the GTX 1650 is not validated (CPU fallback documented); Windows CPU inference is validated.
 
 ## Risks / decisions to validate during implementation
-- Exact .NET 10 SDK and Avalonia compatibility at implementation time.
+- .NET 11 SDK and Avalonia compatibility at implementation time (baseline change: ADR 0009).
 - llama.cpp packaging and Windows/Linux runtime strategy.
 - GPU backend support and actual GTX 1650 compatibility.
 - Vector search library and multilingual embedding model selection.

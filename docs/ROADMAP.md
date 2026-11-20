@@ -1,14 +1,14 @@
 # Roadmap
 
-Статус этапов — плановый. Этапы 0–2 завершены, спецификация утверждена, этап 3 в работе.
+Статус этапов — плановый. Этапы 0–3 завершены и подписаны; этап 4 (Agent Core) — на этапе планирования и утверждения ADR.
 
 | Этап | Название | Статус |
 |---|---|---|
 | 0 | Интервью, аудит, спецификация | Completed |
 | 1 | Foundation | Completed |
 | 2 | Core Infrastructure | Completed |
-| 3 | Model Runtime | In progress |
-| 4 | Agent Core | Not started |
+| 3 | Model Runtime | Completed (signed off 2026-11-20) |
+| 4 | Agent Core | Planning |
 | 5 | Tools & System Integration | Not started |
 | 6 | Memory System | Not started |
 | 7 | Desktop Application | Not started |
@@ -84,10 +84,10 @@
 2. Реестр моделей: контракты, миграция, SQLite-store, валидация, DI. — выполнено
 3. Контракт `ILocalModelRuntime` и детерминированный fake runtime для тестов. — выполнено
 4. Процесс `Astra.ModelHost` и версионируемый IPC. — выполнено
-5. LLamaSharp adapter: load/unload, streaming generation, cancellation, embeddings. — выполнено; проверено на Linux CPU
+5. LLamaSharp adapter: load/unload, streaming generation, cancellation, embeddings. — выполнено; проверено на Linux CPU и Windows CPU
 6. Resource admission: одна активная модель, лимиты контекста и памяти. — выполнено (базовые лимиты и надзор)
-7. Проверка на целевом GTX 1650 и документирование результатов. — ожидает оборудования владельца
-8. Отчёт этапа и CI. — CI зелёный; черновик отчёта готов, ожидает результатов проверки на оборудовании владельца
+7. Проверка на целевом GTX 1650 и документирование результатов. — выполнено: CUDA 12 собирается и запускается, но GPU не найдена (драйвер 457.49, нет CUDA 12 toolkit); зафиксирован CPU fallback
+8. Отчёт этапа и CI. — отчёт готов; CI-прогон ожидает следующего push
 
 ### Критерии завершения
 - Метаданные моделей переживают рестарт, невалидные дескрипторы отклоняются.
