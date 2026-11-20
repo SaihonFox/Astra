@@ -198,8 +198,10 @@ GitHub Actions run 44345679716 — **success** (Stage 1 commit):
 
 Stage 3 — Model Runtime, phase 3.6: validate CPU inference on Windows and CUDA offload on the
 GTX 1650 using [STAGE_3_HARDWARE_VALIDATION.md](STAGE_3_HARDWARE_VALIDATION.md). These require
-the owner's machine. Phase 3.8 will then collect evidence and the stage report. ModelHost is
-not yet started by `Astra.Host`; it will be wired in Stage 4.
+the owner's machine. The draft [Stage 3 report](STAGE_3_MODEL_RUNTIME_REPORT.md) is prepared
+with scope, acceptance criteria, Linux CPU evidence, the Windows flake analysis and CI history;
+its hardware tables and the final sign-off remain. ModelHost is not yet started by
+`Astra.Host`; it will be wired in Stage 4.
 
 Real-model and GPU validation must run on the target Windows machine with the GTX 1650.
 Policy Engine remains Stage 4 and requires owner approval. A new agent should start from

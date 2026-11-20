@@ -53,6 +53,7 @@ MIT — см. [LICENSE](LICENSE). Сторонние зависимости и �
 - [Отчёт Stage 2 — Core Infrastructure](docs/STAGE_2_CORE_INFRASTRUCTURE_REPORT.md)
 - [План Stage 3 — Model Runtime](docs/STAGE_3_MODEL_RUNTIME.md)
 - [Проверка этапа 3 на оборудовании](docs/STAGE_3_HARDWARE_VALIDATION.md)
+- [Отчёт Stage 3 — Model Runtime (черновик)](docs/STAGE_3_MODEL_RUNTIME_REPORT.md)
 - [Навыки агентов](skills/README.md)
 
 ## Правило начала работ

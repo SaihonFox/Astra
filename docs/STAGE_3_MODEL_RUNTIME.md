@@ -1,7 +1,8 @@
 # Stage 3 — Model Runtime
 
-- **Status:** In progress
+- **Status:** In progress — remaining: Windows CPU / CUDA validation and report sign-off
 - **Started:** 2026-11-18
+- **Report:** [STAGE_3_MODEL_RUNTIME_REPORT.md](STAGE_3_MODEL_RUNTIME_REPORT.md) (draft prepared 2026-11-20)
 - **Depends on:** Stage 2 — Core Infrastructure (completed)
 
 ## Goal
@@ -52,7 +53,7 @@ yet decide which model to use; it will consume this runtime in Stage 4.
 | 3.5 | LLamaSharp adapter and CPU backend | Completed on Linux CPU; Windows CPU validation pending |
 | 3.6 | Optional CUDA 12 backend on target hardware | Pending owner hardware; runbook ready |
 | 3.7 | Resource admission and supervision | Completed |
-| 3.8 | Stage report and CI verification | Planned |
+| 3.8 | Stage report and CI verification | Draft prepared 2026-11-20; awaiting 3.6 results |
 
 ## Environment facts (2026-11-18)
 
@@ -164,9 +165,16 @@ dotnet format --verify-no-changes        → exit 0
   admission and the hardware-gated test present.
 - CI run 44468595677 (commit b274875) → success on Ubuntu and Windows with GPU capability
   logging and TRX failure reporting in the workflow.
-- One earlier docs-only commit (8806994, run 44464834270) failed on Windows within the test
-  step while the identical binaries passed before and after. The failing test is unknown:
-  the job log and TRX artifact are not reachable without an authenticated GitHub token. The
-  workflow now writes failed test names and messages to the step summary and to error
-  annotations, so a recurrence is diagnosable.
+- CI run 44686114240 (commit 0ea1c08) → success with failure reporting and serialized
+  ModelHost tests.
+- Windows failed twice on commits with identical product code (runs 44464834270 and
+  44471882692). Improved failure reporting named the test in run 44686500462:
+  `ModelHostLifecycleTests.StopAsyncShutsDownTheProcess` with
+  `RpcException(StatusCode.Cancelled)` from the startup handshake. A 2 s `GetInfo` attempt
+  canceled by its timeout surfaced as `RpcException(Cancelled)` instead of
+  `OperationCanceledException`, and the readiness loop treated it as fatal. `ConnectAsync` now
+  maps that case to a retryable `TimeoutException` and preserves caller cancellation. See the
+  draft report for the full analysis.
+- CI run 44688730382 (commit a8640f2) → success on Ubuntu and Windows after the handshake fix.
+- CI run 44710009253 (commit f292389) → success for the documentation snapshot.
 

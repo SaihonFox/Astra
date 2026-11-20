@@ -315,14 +315,17 @@ modification. Return to the normal CPU build with `dotnet restore AstraAgent.sln
 
 ### 6.3 Phase 3.8 — Stage 3 report and sign-off
 
-Create `docs/STAGE_3_MODEL_RUNTIME_REPORT.md` (not present yet) with:
+A draft of `docs/STAGE_3_MODEL_RUNTIME_REPORT.md` already exists (prepared 2026-11-20) with
+scope, acceptance criteria, Linux CPU evidence, the Windows flake analysis and CI history.
+Fill its hardware tables, then set the status to `Signed off`. The remaining sections to
+complete are:
 
-- environment and OS versions used for validation;
+- Windows environment and OS build;
 - model name, quantization, license and source;
 - CPU and GPU (or fallback) timings;
 - the exact commands and their output;
 - CI run links for the final commit;
-- limitations that remain (Host wiring, orphan-process watchdog, log redaction, flake).
+- limitations that remain (Host wiring, orphan-process watchdog, log redaction).
 
 Then update:
 
